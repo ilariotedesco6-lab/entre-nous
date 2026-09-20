@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Entre nous</title>
+<meta name="description" content="Messagerie privée entre amis : messages, groupes et appels.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2ED; --surface:#FFFFFF; --surface-2:#E1E9E2; --ink:#15251E; --muted:#586B61;
+  --line:#D0DAD2; --mine:#1D6A57; --on-mine:#FFFFFF; --accent:#F0B429; --on-accent:#2A1F00;
+  --danger:#C23B2C; --ok:#2FA37F; --shadow:0 1px 2px rgba(20,40,30,.08);
+  --font-body:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-display:'Bricolage Grotesque','Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1613; --surface:#17211C; --surface-2:#202D27; --ink:#E7EFEA; --muted:#93A69B;
+    --line:#2A3A32; --mine:#2F8A72; --on-mine:#FFFFFF; --accent:#F0B429; --on-accent:#2A1F00;
+    --danger:#E5604F; --ok:#3CC79B; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1613; --surface:#17211C; --surface-2:#202D27; --ink:#E7EFEA; --muted:#93A69B;
+  --line:#2A3A32; --mine:#2F8A72; --on-mine:#FFFFFF; --accent:#F0B429; --on-accent:#2A1F00;
+  --danger:#E5604F; --ok:#3CC79B; --shadow:none;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.45 var(--font-body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+button:focus-visible,textarea:focus-visible,.chat-item:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+svg{display:block}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic.fill{fill:currentColor;stroke:none}
+
+#app{height:100dvh;display:grid;grid-template-columns:340px 1fr}
+#side{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side-head{padding:18px 18px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.side-head h1{font:700 26px/1.1 var(--font-display);margin:0;letter-spacing:-.01em}
+.me{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;min-width:0}
+.me span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.meid{display:flex;align-items:center;gap:8px;min-width:0}
+.me .icon-btn{width:36px;height:36px}
+.welcome{position:fixed;inset:0;z-index:60;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
+.w-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px 26px;width:min(400px,100%)}
+.w-card h1{font:700 32px/1.1 var(--font-display);margin:0 0 6px;letter-spacing:-.01em}
+.w-tag{margin:0 0 20px;color:var(--muted)}
+.w-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:14px;padding:4px;margin-bottom:18px}
+.w-tabs button{padding:9px 6px;border-radius:10px;font-weight:600;color:var(--muted)}
+.w-tabs button[aria-selected="true"]{background:var(--mine);color:var(--on-mine)}
+.w-card label{display:block;font-size:14px;font-weight:600;margin:12px 0 5px}
+.w-card input{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px 14px;font:inherit}
+.w-card input:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.w-err{color:var(--danger);font-size:14px;min-height:20px;margin:12px 0 4px}
+.w-submit{width:100%;padding:13px;border-radius:14px;background:var(--mine);color:var(--on-mine);font-weight:600}
+.w-submit:disabled{opacity:.45;cursor:not-allowed}
+.w-note{font-size:13px;color:var(--muted);margin:14px 0 0}
+
+#chats{list-style:none;margin:0;padding:6px 8px 16px;overflow-y:auto;flex:1}
+.chat-item{width:100%;display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;text-align:left}
+.chat-item:hover{background:var(--surface-2)}
+.chat-item.active{background:var(--surface-2)}
+.ci-body{flex:1;min-width:0}
+.ci-name{font-weight:600;display:flex;align-items:center;gap:6px}
+.ci-prev{color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{width:10px;height:10px;border-radius:50%;background:var(--accent);flex:none}
+.hint{color:var(--muted);font-size:14px;padding:10px 18px;margin:0}
+.hint.center{text-align:center;margin:auto}
+
+.av{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--surface-2);flex:none}
+.av.sm{width:30px;height:30px}
+.av.xl{width:96px;height:96px}
+.av-wrap{position:relative;flex:none}
+.dot{position:absolute;right:0;bottom:0;width:13px;height:13px;border-radius:50%;background:var(--ok);border:2px solid var(--surface)}
+.salon-av{display:grid;place-items:center;background:var(--mine);color:var(--on-mine);font:700 18px var(--font-display)}
+
+#main{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative}
+.notice{margin:12px;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--accent);font-size:14px}
+.chat-head{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.chat-head .t{flex:1;min-width:0}
+.chat-head h2{font:700 19px/1.2 var(--font-display);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-head .s{color:var(--muted);font-size:13px}
+.icon-btn{width:42px;height:42px;border-radius:50%;display:grid;place-items:center}
+.icon-btn:hover:not(:disabled){background:var(--surface-2)}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed}
+#back{display:none}
+
+.feed{flex:1;overflow-y:auto;padding:16px 14px 8px;display:flex;flex-direction:column;gap:3px;min-height:0}
+.empty{margin:auto;text-align:center;max-width:340px;padding:24px;color:var(--muted)}
+.empty h2{font:700 24px/1.2 var(--font-display);color:var(--ink);margin:0 0 8px}
+.day{align-self:center;color:var(--muted);font-size:12.5px;margin:14px 0 8px}
+.row{display:flex;flex-direction:column;max-width:78%}
+.row.mine{align-self:flex-end;align-items:flex-end}
+.row.theirs{align-self:flex-start;align-items:flex-start}
+.who{font-size:12.5px;color:var(--muted);margin:8px 0 2px 10px}
+.bubble{padding:8px 12px 6px;border-radius:18px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);overflow-wrap:anywhere;white-space:pre-wrap}
+.mine .bubble{background:var(--mine);color:var(--on-mine);border-color:transparent;border-bottom-right-radius:6px}
+.theirs .bubble{border-bottom-left-radius:6px}
+.time{display:block;font-size:11px;opacity:.65;text-align:right;margin-top:2px;white-space:normal}
+
+.mine .voice.playing 
+#composer{padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
+.compose{display:flex;align-items:flex-end;gap:8px}
+#ta{flex:1;resize:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:20px;padding:10px 14px;font:inherit;max-height:140px;line-height:1.35}
+.round-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--mine);color:var(--on-mine)}
+.round-btn.ghost{background:var(--surface-2);color:var(--ink)}
+.round-btn:disabled{opacity:.4;cursor:not-allowed}
+
+.overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(6px)}
+.inc-card{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:28px 32px;text-align:center;width:min(360px,92vw)}
+.inc-card h2{font:700 24px var(--font-display);margin:14px 0 2px}
+.inc-card p{margin:0 0 22px;color:var(--muted)}
+.inc-actions{display:flex;justify-content:center;gap:36px}
+.inc-card .av{margin:0 auto;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 70%,transparent)}100%{box-shadow:0 0 0 26px transparent}}
+.big-btn{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:#fff}
+.big-btn.ok{background:var(--mine)}
+.big-btn.no{background:var(--danger)}
+.big-btn.toggle{background:var(--surface-2);color:var(--ink)}
+.big-btn.toggle.off{background:var(--ink);color:var(--surface)}
+
+#call{background:#0B110E;color:#F1F6F3;display:block;backdrop-filter:none}
+#v-remote{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0B110E}
+#v-remote.novideo{visibility:hidden}
+#call-audio{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#call-audio h2{font:700 28px var(--font-display);margin:0}
+#v-local{position:absolute;right:14px;top:70px;width:110px;aspect-ratio:3/4;object-fit:cover;border-radius:16px;background:#1a2520;transform:scaleX(-1);border:2px solid rgba(255,255,255,.25)}
+.call-top{position:absolute;left:0;right:0;top:0;padding:18px 18px;display:flex;justify-content:space-between;gap:12px;background:linear-gradient(#0B110Eaa,transparent)}
+.call-top strong{font:700 18px var(--font-display)}
+.call-bar{position:absolute;left:0;right:0;bottom:0;padding:22px 16px calc(28px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:22px}
+
+.callmsg-t{font-weight:600}
+.callmsg-a{display:inline-block;margin-top:6px;padding:7px 14px;border-radius:999px;background:var(--mine);color:var(--on-mine);font-weight:600;text-decoration:none}
+.mine .callmsg-a{background:var(--on-mine);color:var(--mine)}
+.callmsg-a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.lb-url{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;font-size:13px;margin:0 0 14px}
+.lb-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.pill{padding:10px 16px;border-radius:999px;background:var(--surface-2);color:var(--ink);font-weight:600;text-decoration:none;display:inline-block}
+.pill.main{background:var(--mine);color:var(--on-mine)}
+.st-card{text-align:left;max-height:90dvh;overflow:auto}
+.st-card h2{font:700 24px var(--font-display);margin:0 0 4px}
+.tone-list{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+.tone{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px}
+.tone input{accent-color:var(--mine);width:18px;height:18px;margin:0}
+.tone label{flex:1;cursor:pointer}
+.tone .pill{padding:6px 12px;font-size:14px}
+.vol{display:flex;align-items:center;gap:12px;font-weight:600;margin:6px 0 4px}
+.vol input{flex:1;accent-color:var(--mine)}
+.inc-hint{font-size:14px;margin:-8px 0 16px!important;color:var(--ink)!important;background:var(--surface-2);padding:8px 12px;border-radius:12px}
+.chat-head .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec-l{list-style:none;padding:14px 12px 4px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.newg{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:14px;color:var(--mine);font-weight:600}
+.newg:hover:not(:disabled){background:var(--surface-2)}
+.newg:disabled{opacity:.4;cursor:not-allowed}
+.sys{align-self:center;color:var(--muted);font-size:13px;background:var(--surface-2);padding:4px 12px;border-radius:999px;margin:8px 0;text-align:center;max-width:90%}
+.lbl{font-weight:600;font-size:14px;margin:12px 0 5px}
+.tone .lab{flex:1;overflow:hidden;text-overflow:ellipsis}
+.tone-list.scroll{max-height:32dvh;overflow:auto}
+.pill.danger{background:var(--danger);color:#fff}
+.pill.small{padding:6px 12px;font-size:14px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(440px,92vw);opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+
+@media (max-width:759px){
+  #app{grid-template-columns:1fr}
+  #main{display:none}
+  body.in-chat #side{display:none}
+  body.in-chat #main{display:flex}
+  #back{display:grid}
+  .row{max-width:88%}
+  #v-local{width:88px;top:64px}
+}
+@media (prefers-reduced-motion:reduce){
+  .inc-card .av{animation:none}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <header class="side-head">
+      <h1>Entre nous</h1>
+      <div class="me"><div class="meid" id="me-id"></div><button id="settings-btn" class="icon-btn" aria-label="Réglages des sonneries" title="Sonneries"></button><button id="logout" class="icon-btn" aria-label="Se déconnecter" title="Se déconnecter"></button></div>
+    </header>
+    <ul id="chats"></ul>
+    <p id="side-hint" class="hint" hidden></p>
+    <p id="side-diag" class="hint" style="font-size:12px;opacity:.8"></p>
+  </aside>
+
+  <main id="main">
+    <div id="notice" class="notice" hidden></div>
+    <header id="chat-head" class="chat-head" hidden>
+      <button id="back" class="icon-btn" aria-label="Retour aux conversations"></button>
+      <div id="head-av"></div>
+      <div class="t"><h2 id="head-title"></h2><div class="s" id="head-sub"></div></div>
+      <button id="info-btn" class="icon-btn" aria-label="Infos du groupe" title="Infos du groupe" hidden></button>
+      <button id="call-audio-btn" class="icon-btn" aria-label="Appel vocal"></button>
+      <button id="call-video-btn" class="icon-btn" aria-label="Appel vidéo"></button>
+    </header>
+    <div id="feed" class="feed" hidden></div>
+    <div id="empty" class="empty">
+      <h2>Choisis une conversation</h2>
+      <p>Le salon réunit tout le monde. Ouvre une discussion privée pour appeler un·e ami·e en vocal ou en vidéo.</p>
+    </div>
+    <div id="composer" hidden>
+      <div id="compose-text" class="compose">
+        <textarea id="ta" rows="1" maxlength="2000" placeholder="Écrire un message" aria-label="Message"></textarea>
+        <button id="btn-send" class="round-btn" aria-label="Envoyer" disabled></button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<section id="welcome" class="welcome">
+  <div class="w-card">
+    <h1>Entre nous</h1>
+    <p class="w-tag">La messagerie de ta bande : messages, vocaux et appels.</p>
+    <div class="w-tabs" role="tablist">
+      <button id="tab-login" role="tab" aria-selected="true">Se connecter</button>
+      <button id="tab-create" role="tab" aria-selected="false">Créer un compte</button>
+    </div>
+    <label for="w-name">Nom</label>
+    <input id="w-name" autocomplete="username" maxlength="24" autocapitalize="words">
+    <label for="w-code">Code</label>
+    <input id="w-code" type="password" autocomplete="current-password" maxlength="64">
+    <div id="w-code2-row" hidden>
+      <label for="w-code2">Répète le code</label>
+      <input id="w-code2" type="password" autocomplete="new-password" maxlength="64">
+    </div>
+    <div id="w-inv-row" hidden>
+      <label for="w-inv">Code d'invitation</label>
+      <input id="w-inv" autocomplete="off" maxlength="60">
+    </div>
+    <p id="w-err" class="w-err" role="alert"></p>
+    <button id="w-submit" class="w-submit">Se connecter</button>
+    <p id="w-note" class="w-note">Connexion à la messagerie…</p>
+  </div>
+</section>
+
+<div id="incoming" class="overlay" hidden role="alertdialog" aria-labelledby="inc-title">
+  <div class="inc-card">
+    <img id="inc-av" class="av xl" alt="">
+    <h2 id="inc-title"></h2>
+    <p id="inc-sub"></p>
+    <p id="inc-hint" class="inc-hint" hidden>Touche ou clique n'importe où sur la page pour activer la sonnerie.</p>
+    <div class="inc-actions">
+      <button id="inc-no" class="big-btn no" aria-label="Refuser"></button>
+      <button id="inc-yes" class="big-btn ok" aria-label="Répondre"></button>
+    </div>
+  </div>
+</div>
+
+<div id="gnew" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="gn-t">
+  <div class="inc-card st-card">
+    <h2 id="gn-t">Nouveau groupe</h2>
+    <label for="gn-name" class="lbl">Nom du groupe</label>
+    <input id="gn-name" class="lb-url" maxlength="30" placeholder="Ex. : Les copains" autocomplete="off">
+    <div class="lbl">Membres</div>
+    <div id="gn-list" class="tone-list scroll"></div>
+    <p id="gn-err" class="w-err" role="alert"></p>
+    <div class="lb-actions"><button id="gn-cancel" class="pill">Annuler</button><button id="gn-create" class="pill main">Créer le groupe</button></div>
+  </div>
+</div>
+
+<div id="ginfo" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="gi-t">
+  <div class="inc-card st-card">
+    <h2 id="gi-t"></h2>
+    <p id="gi-sub"></p>
+    <div id="gi-rename" hidden>
+      <label for="gi-name" class="lbl">Renommer le groupe</label>
+      <input id="gi-name" class="lb-url" maxlength="30" autocomplete="off" style="margin-bottom:8px">
+      <button id="gi-rename-btn" class="pill small">Renommer</button>
+    </div>
+    <div class="lbl">Membres</div>
+    <div id="gi-members" class="tone-list scroll"></div>
+    <div id="gi-add-wrap" hidden>
+      <div class="lbl">Ajouter des membres</div>
+      <div id="gi-add" class="tone-list scroll"></div>
+      <button id="gi-add-btn" class="pill small">Ajouter la sélection</button>
+    </div>
+    <p id="gi-err" class="w-err" role="alert"></p>
+    <div class="lb-actions"><button id="gi-leave" class="pill danger">Quitter le groupe</button><button id="gi-close" class="pill main">Fermer</button></div>
+  </div>
+</div>
+
+<div id="settings" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="st-t">
+  <div class="inc-card st-card">
+    <h2 id="st-t">Sonneries</h2>
+    <p>Choisis le son qui joue quand quelqu'un t'appelle.</p>
+    <div id="tone-list" class="tone-list" role="radiogroup" aria-label="Sonnerie"></div>
+    <label class="vol" for="vol">Volume <input id="vol" type="range" min="0" max="100" step="5"></label>
+    <p class="w-note">Ces réglages sont enregistrés sur cet appareil.</p>
+    <div class="lb-actions" style="margin-top:14px"><button id="st-close" class="pill main">Terminé</button></div>
+  </div>
+</div>
+
+<div id="linkbox" class="overlay" hidden role="dialog" aria-labelledby="lb-t">
+  <div class="inc-card">
+    <h2 id="lb-t" style="font-size:22px">Ouvre l'appel</h2>
+    <p>Ton navigateur n'a pas ouvert l'appel tout seul. Clique sur « Ouvrir », ou copie le lien dans un nouvel onglet.</p>
+    <input id="lb-url" class="lb-url" readonly aria-label="Lien de l'appel">
+    <div class="lb-actions">
+      <a id="lb-open" class="pill main" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+      <button id="lb-copy" class="pill">Copier</button>
+      <button id="lb-close" class="pill">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { firebaseConfig } from './firebase-config.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import * as FA from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+import * as FS from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+(function(){
+'use strict';
+
+/* ---------- utilitaires ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const P = {
+  send:'<path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/>',
+  mic:'<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>',
+  micOff:'<path d="m2 2 20 20"/><path d="M9 9v3a3 3 0 0 0 5.1 2.1"/><path d="M15 9.3V5a3 3 0 0 0-5.9-.6"/><path d="M19 10v2a7 7 0 0 1-.9 3.4"/><path d="M5 10v2a7 7 0 0 0 11.5 5.4"/><path d="M12 19v3"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
+  video:'<path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/>',
+  videoOff:'<path d="m2 2 20 20"/><path d="M10.7 6H14a2 2 0 0 1 2 2v3.3l6 3.7V8l-6 3.7"/><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2"/>',
+  back:'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/>',
+  play:'<path d="M7 4v16l13-8Z"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  plus:'<path d="M12 5v14"/><path d="M5 12h14"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
+  pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
+};
+function ic(name, extra, size){
+  const s = size || 20;
+  return '<svg class="ic ' + (extra || '') + '" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" aria-hidden="true">' + P[name] + '</svg>';
+}
+function hangup(size){ return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" aria-hidden="true" style="transform:rotate(135deg)">' + P.phone + '</svg>'; }
+function fmtTime(ts){ return new Date(ts).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}); }
+function fmtDay(ts){
+  const d = new Date(ts), t = new Date(); const y = new Date(); y.setDate(t.getDate() - 1);
+  if (d.toDateString() === t.toDateString()) return "Aujourd'hui";
+  if (d.toDateString() === y.toDateString()) return 'Hier';
+  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+}
+function fmtDur(s){ s = Math.max(0, Math.round(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+let toastTimer = null;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 5000); }
+function notice(msg){ const n = $('#notice'); n.textContent = msg; n.hidden = !msg; }
+
+/* ---------- état ---------- */
+let db = null, room = null, auth = null, fsdb = null;
+const me = {id: null, name: ''};
+let canWrite = true;
+const prof = {};                 // id -> profil résolu
+let people = new Map();          // id -> {seen}
+const previews = new Map();      // chatId -> dernier message
+const previewUnsubs = new Map();
+let cur = null;                  // {id, group, uid}
+let msgs = [];
+let unsubCur = null;
+let stick = true;
+let readMap = {};
+try { readMap = JSON.parse(localStorage.getItem('entre-nous:read') || '{}'); } catch (e) {}
+function markRead(chatId){ readMap[chatId] = Date.now(); try { localStorage.setItem('entre-nous:read', JSON.stringify(readMap)); } catch (e) {} }
+
+async function resolve(){ /* les noms viennent des comptes */ }
+function nameOf(id){ const p = prof[id]; return (p && p.name) || ('Ami·e ' + String(id || '').slice(-3)); }
+function avatarOf(id){ return (prof[id] && prof[id].avatarUrl) || ''; }
+function dmId(a, b){ return 'dm~' + [a, b].sort().join('~'); }
+function msgPath(chatId){ return 'chats/' + chatId + '/messages'; }
+function onlineUids(){
+  const s = new Set();
+  if (room) room.peers().forEach(p => { if (p.presence && p.presence.uid) s.add(p.presence.uid); });
+  return s;
+}
+
+/* ---------- liste des conversations ---------- */
+function ensurePreview(chatId){
+  if (!db || previewUnsubs.has(chatId)) return;
+  const un = db.collection(msgPath(chatId)).orderBy('ts', 'desc').limit(1).onSnapshot(snap => {
+    previews.set(chatId, snap.docs[0] ? snap.docs[0].data() : null);
+    if (cur && cur.id === chatId && !document.hidden) markRead(chatId);
+    renderList();
+  }, () => {});
+  previewUnsubs.set(chatId, un);
+}
+let groups = new Map();   /* id -> {name, members[], creator, created} */
+function myGroups(){ return [...groups.entries()].filter(e => Array.isArray(e[1].members) && e[1].members.includes(me.id)); }
+function otherAccounts(){ return [...people.keys()].filter(id => id !== me.id).sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'fr')); }
+function groupAv(name, id, cls){
+  const d = el('div', 'av salon-av ' + (cls || ''), (((name || 'G').trim()[0]) || 'G').toUpperCase());
+  d.style.background = colorFor(id || name); return d;
+}
+function previewText(p, multi){
+  if (!p) return 'Aucun message';
+  if (p.kind === 'sys') return p.text || '';
+  const pre = p.from === me.id ? 'Toi : ' : (multi ? nameOf(p.from) + ' : ' : '');
+  return pre + (p.kind === 'call' ? (p.video ? 'Appel vidéo' : 'Appel vocal') : (p.text || ''));
+}
+function avatarEl(id, cls){
+  const img = el('img', 'av ' + (cls || ''));
+  img.alt = ''; img.src = avatarOf(id);
+  return img;
+}
+function renderList(){
+  const ul = $('#chats'); ul.textContent = '';
+  const online = onlineUids();
+  const others = otherAccounts();
+  const item = (chat, avatar, title) => {
+    const li = el('li');
+    const b = el('button', 'chat-item' + (cur && cur.id === chat.id ? ' active' : ''));
+    const body = el('div', 'ci-body');
+    const nm = el('div', 'ci-name'); nm.append(el('span', '', title));
+    const p = previews.get(chat.id);
+    const unread = p && p.from !== me.id && p.ts > (readMap[chat.id] || 0) && !(cur && cur.id === chat.id);
+    if (unread) { const d = el('span', 'badge'); d.setAttribute('aria-label', 'Nouveau message'); nm.append(d); }
+    body.append(nm, el('div', 'ci-prev', previewText(p, chat.group)));
+    b.append(avatar, body);
+    b.onclick = () => openChat(chat);
+    li.append(b); return li;
+  };
+  const sw = el('div', 'av-wrap'); sw.append(el('div', 'av salon-av', 'S'));
+  ul.append(item({id: 'salon', group: true}, sw, 'Le salon'));
+  const nl = el('li'); const nb = el('button', 'newg');
+  nb.innerHTML = ic('plus', '', 18) + '<span>Nouveau groupe</span>';
+  nb.disabled = !canWrite || others.length === 0; nb.onclick = openNewGroup;
+  nl.append(nb); ul.append(nl);
+  const gs = myGroups().sort((a, b) => ((previews.get('g~' + b[0]) || {}).ts || b[1].created || 0) - ((previews.get('g~' + a[0]) || {}).ts || a[1].created || 0));
+  if (gs.length) ul.append(el('li', 'sec-l', 'Groupes'));
+  gs.forEach(e => { const w = el('div', 'av-wrap'); w.append(groupAv(e[1].name, e[0])); ul.append(item({id: 'g~' + e[0], group: true, gid: e[0]}, w, e[1].name)); });
+  const dms = others.slice().sort((a, b) => (online.has(b) - online.has(a)) || nameOf(a).localeCompare(nameOf(b), 'fr'));
+  if (dms.length) ul.append(el('li', 'sec-l', 'Discussions privées'));
+  dms.forEach(uid => {
+    const w = el('div', 'av-wrap'); w.append(avatarEl(uid)); if (online.has(uid)) w.append(el('span', 'dot'));
+    ul.append(item({id: dmId(me.id, uid), group: false, uid}, w, nameOf(uid)));
+  });
+  const hint = $('#side-hint');
+  if (others.length === 0) {
+    hint.hidden = false;
+    hint.textContent = "Personne d'autre n'a encore ouvert la page. Dès qu'un·e ami·e l'ouvre, il ou elle apparaît ici.";
+  } else hint.hidden = true;
+}
+
+/* ---------- conversation ouverte ---------- */
+function renderHead(){
+  if (!cur) return;
+  $('#chat-head').hidden = false;
+  const g = cur.gid ? groups.get(cur.gid) : null;
+  const av = $('#head-av'); av.textContent = '';
+  if (cur.gid) av.append(groupAv(g ? g.name : 'G', cur.gid));
+  else if (cur.group) av.append(el('div', 'av salon-av', 'S'));
+  else av.append(avatarEl(cur.uid));
+  $('#head-title').textContent = cur.gid ? (g ? g.name : 'Groupe') : (cur.group ? 'Le salon' : nameOf(cur.uid));
+  const online = onlineUids();
+  if (cur.gid) $('#head-sub').textContent = g ? g.members.map(nameOf).join(', ') : '';
+  else if (cur.group) $('#head-sub').textContent = online.size + ' en ligne · appels depuis une discussion privée ou un groupe';
+  else $('#head-sub').textContent = online.has(cur.uid) ? 'En ligne' : 'Hors ligne';
+  $('#info-btn').hidden = !cur.gid;
+  const canCall = (cur.gid || !cur.group) && canWrite;
+  ['#call-audio-btn', '#call-video-btn'].forEach(x => { $(x).hidden = false; $(x).disabled = !canCall; });
+  const title = (cur.group && !cur.gid) ? "Ouvre un groupe ou une discussion privée pour appeler" : '';
+  $('#call-audio-btn').title = title || 'Appel vocal (ouvre Jitsi Meet)';
+  $('#call-video-btn').title = title || 'Appel vidéo (ouvre Jitsi Meet)';
+}
+function closeChat(){
+  if (unsubCur) { unsubCur(); unsubCur = null; }
+  cur = null; msgs = [];
+  $('#chat-head').hidden = true; $('#feed').hidden = true; $('#composer').hidden = true; $('#empty').hidden = false;
+  document.body.classList.remove('in-chat'); renderList();
+}
+
+async function openChat(chat){
+  if (!db) return;
+  cur = chat; msgs = []; stick = true;
+  if (unsubCur) { unsubCur(); unsubCur = null; }
+  document.body.classList.add('in-chat');
+  $('#empty').hidden = true; $('#feed').hidden = false; $('#composer').hidden = false;
+  $('#ta').disabled = !canWrite; $('#btn-send').disabled = true;
+  $('#ta').placeholder = canWrite ? 'Écrire un message' : 'Lecture seule';
+  renderHead(); renderList(); renderFeed();
+  unsubCur = db.collection(msgPath(chat.id)).orderBy('ts', 'desc').limit(80).onSnapshot(async snap => {
+    const list = snap.docs.map(d => Object.assign({id: d.id}, d.data())).reverse();
+    await resolve(list.map(m => m.from));
+    if (cur !== chat) return;
+    msgs = list; renderFeed(); markRead(chat.id); renderList();
+  }, e => toast('Impossible de charger les messages (' + e.code + ').'));
+}
+
+function renderFeed(){
+  const feed = $('#feed');
+  const near = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 140;
+  const lastMine = msgs.length && msgs[msgs.length - 1].from === me.id;
+  feed.textContent = '';
+  if (!msgs.length) feed.append(el('p', 'hint center', 'Aucun message pour le moment. Écris le premier.'));
+  let lastDay = '', lastFrom = null;
+  msgs.forEach(m => {
+    const day = new Date(m.ts).toDateString();
+    if (day !== lastDay) { feed.append(el('div', 'day', fmtDay(m.ts))); lastDay = day; lastFrom = null; }
+    if (m.kind === 'sys') { feed.append(el('div', 'sys', m.text || '')); lastFrom = null; return; }
+    const mine = m.from === me.id;
+    const row = el('div', 'row ' + (mine ? 'mine' : 'theirs'));
+    if (cur.group && !mine && lastFrom !== m.from) row.append(el('div', 'who', nameOf(m.from)));
+    const bub = el('div', 'bubble');
+    if (m.kind === 'call') bub.append(callEl(m));
+    else bub.append(document.createTextNode(m.text || ''));
+    bub.append(el('span', 'time', fmtTime(m.ts)));
+    row.append(bub); feed.append(row);
+    lastFrom = m.from;
+  });
+  if (stick || near || lastMine) { feed.scrollTop = feed.scrollHeight; stick = false; }
+}
+
+/* ---------- envoi de texte ---------- */
+function autosize(){ const ta = $('#ta'); ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 140) + 'px'; }
+function toggleSendBtn(){ $('#btn-send').disabled = $('#ta').value.trim().length === 0; }
+async function sendText(){
+  const ta = $('#ta'); const t = ta.value.trim();
+  if (!t || !cur || !canWrite) return;
+  ta.value = ''; autosize(); toggleSendBtn();
+  const chat = cur;
+  try {
+    await db.collection(msgPath(chat.id)).add({from: me.id, ts: Date.now(), kind: 'text', text: t.slice(0, 2000)});
+    stick = true; maybePrune(chat.id);
+  } catch (e) { ta.value = t; autosize(); toggleSendBtn(); toast("Le message n'a pas pu être envoyé (" + (e.code || 'erreur') + ')'); }
+}
+/* Garde l'historique raisonnable : au-delà de ~300 messages, les 100 plus anciens sont supprimés. */
+async function maybePrune(chatId){
+  if (Math.random() > 0.08) return;
+  try {
+    const col = db.collection(msgPath(chatId));
+    const snap = await col.orderBy('ts', 'asc').limit(300).get();
+    if (snap.size < 300) return;
+    for (const d of snap.docs.slice(0, 100)) {
+      await col.doc(d.id).delete();
+    }
+  } catch (e) {}
+}
+
+/* ---------- appels via Jitsi Meet (s'ouvrent dans un nouvel onglet) ---------- */
+const JITSI = 'https://meet.jit.si/entre-nous-';
+let incoming = null;
+const sig = (topic, data) => { if (room) room.emit(topic, data).catch(() => {}); };
+function validCallUrl(u){ return typeof u === 'string' && u.startsWith(JITSI) && /^[A-Za-z0-9\-_.:/#=&?]+$/.test(u) && u.length < 200; }
+
+/* ---------- sonneries (générées par le navigateur, aucun fichier) ---------- */
+const TONES = {
+  classique: {label: 'Classique', cycle: 2600, type: 'sine', gain: .5, notes: [[440, 0, .4], [480, 0, .4], [440, .6, .4], [480, .6, .4]]},
+  cloche:    {label: 'Cloche', cycle: 2400, type: 'sine', gain: .4, bell: true, notes: [[1046.5, 0, 1], [1318.5, .3, 1], [1568, .6, 1.2]]},
+  marimba:   {label: 'Marimba', cycle: 1900, type: 'triangle', gain: .6, notes: [[523.25, 0, .35], [659.25, .14, .35], [783.99, .28, .35], [1046.5, .42, .5]]},
+  numerique: {label: 'Numérique', cycle: 1600, type: 'square', gain: .18, notes: [[1000, 0, .1], [1000, .2, .1], [1000, .4, .1]]},
+  berceuse:  {label: 'Berceuse', cycle: 3000, type: 'sine', gain: .5, notes: [[392, 0, .6], [493.88, .5, .6], [587.33, 1, .6], [493.88, 1.5, .8]]},
+  aucune:    {label: 'Silencieuse (vibration seulement)', cycle: 2000, type: 'sine', gain: 0, notes: []}
+};
+let settings = {tone: 'classique', vol: 0.7};
+function loadSettings(){
+  try {
+    const x = JSON.parse(localStorage.getItem('entre-nous:settings:' + me.id) || 'null');
+    if (x && TONES[x.tone]) settings = {tone: x.tone, vol: Math.min(1, Math.max(0, Number(x.vol)))};
+    if (isNaN(settings.vol)) settings.vol = 0.7;
+  } catch (e) {}
+}
+function saveSettings(){ try { localStorage.setItem('entre-nous:settings:' + me.id, JSON.stringify(settings)); } catch (e) {} }
+
+let actx = null;
+function audioCtx(){
+  if (!actx) {
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      actx.onstatechange = () => { if (actx.state === 'running') $('#inc-hint').hidden = true; };
+    } catch (e) {}
+  }
+  return actx;
+}
+/* Les navigateurs n'autorisent le son qu'après un premier clic ou une première touche sur la page. */
+function unlockAudio(){ const c = audioCtx(); if (c && c.state === 'suspended') c.resume().catch(() => {}); }
+['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, unlockAudio, {passive: true}));
+
+function playCycle(name){
+  const t = TONES[name], c = audioCtx();
+  if (!t || !c || !t.notes.length) return;
+  if (c.state === 'suspended') c.resume().catch(() => {});
+  const now = c.currentTime + 0.02, vol = settings.vol * settings.vol * t.gain;
+  const partials = t.bell ? [[1, 1], [2.76, .35], [5.4, .15]] : [[1, 1]];
+  t.notes.forEach(n => {
+    partials.forEach(pt => {
+      const o = c.createOscillator(), g = c.createGain(), st = now + n[1];
+      o.type = t.type; o.frequency.value = n[0] * pt[0];
+      g.gain.setValueAtTime(0.0001, st);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol * pt[1]), st + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, st + n[2]);
+      o.connect(g); g.connect(c.destination); o.start(st); o.stop(st + n[2] + 0.05);
+    });
+  });
+}
+let ringInt = null;
+function startRing(){
+  stopRing();
+  const t = TONES[settings.tone] || TONES.classique;
+  playCycle(settings.tone);
+  ringInt = setInterval(() => playCycle(settings.tone), t.cycle);
+  try { if (navigator.vibrate) navigator.vibrate([400, 200, 400]); } catch (e) {}
+  if (t.notes.length) setTimeout(() => { const c = audioCtx(); if (incoming && (!c || c.state !== 'running')) $('#inc-hint').hidden = false; }, 250);
+}
+function stopRing(){ clearInterval(ringInt); ringInt = null; $('#inc-hint').hidden = true; }
+
+function buildSettings(){
+  const list = $('#tone-list'); list.textContent = '';
+  Object.keys(TONES).forEach(key => {
+    const row = el('div', 'tone');
+    const r = el('input'); r.type = 'radio'; r.name = 'tone'; r.id = 'tone-' + key; r.value = key; r.checked = settings.tone === key;
+    const l = el('label', '', TONES[key].label); l.htmlFor = r.id;
+    const b = el('button', 'pill', 'Écouter'); b.type = 'button'; b.setAttribute('aria-label', 'Écouter la sonnerie ' + TONES[key].label);
+    b.disabled = !TONES[key].notes.length;
+    r.onchange = () => { settings.tone = key; saveSettings(); unlockAudio(); playCycle(key); };
+    b.onclick = () => { unlockAudio(); playCycle(key); };
+    row.append(r, l, b); list.append(row);
+  });
+  $('#vol').value = Math.round(settings.vol * 100);
+}
+function openSettings(){ buildSettings(); $('#settings').hidden = false; const c = $('#tone-list input:checked'); if (c) c.focus(); }
+function closeSettings(){ $('#settings').hidden = true; $('#settings-btn').focus(); }
+
+function showLink(url){
+  $('#lb-url').value = url; $('#lb-open').href = url; $('#linkbox').hidden = false;
+}
+function openLink(url){
+  let w = null;
+  try { w = window.open(url, '_blank'); } catch (e) {}
+  if (w) { try { w.opener = null; } catch (e) {} } else showLink(url);
+}
+function randomName(){
+  try { const a = new Uint8Array(10); crypto.getRandomValues(a); return Array.from(a).map(b => b.toString(36).padStart(2, '0')).join(''); }
+  catch (e) { return Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12); }
+}
+async function startCall(video){
+  if (!canWrite || !cur || (cur.group && !cur.gid)) return;
+  const g = cur.gid ? groups.get(cur.gid) : null;
+  const targets = cur.gid ? (g ? g.members.filter(id => id !== me.id) : []) : [cur.uid];
+  if (!targets.length) return;
+  const url = JITSI + randomName() + (video ? '' : '#config.startAudioOnly=true');
+  openLink(url);   /* d'abord, pendant le clic, pour que le navigateur n'y voie pas une fenêtre indésirable */
+  try {
+    await db.collection(msgPath(cur.id)).add({from: me.id, ts: Date.now(), kind: 'call', video: !!video, url});
+    stick = true;
+  } catch (e) { toast("L'invitation n'a pas pu être envoyée."); return; }
+  sig('ring', {toUids: targets, fromUid: me.id, video: !!video, url, groupName: g ? g.name : ''});
+  const on = onlineUids();
+  if (!targets.some(t => on.has(t))) toast(cur.gid ? "Personne n'a la page ouverte : le lien est dans la conversation." : nameOf(cur.uid) + " n'a pas la page ouverte : le lien est dans la conversation, elle ou il pourra te rejoindre.");
+}
+function showIncoming(){
+  const inc = incoming;
+  $('#inc-av').src = avatarOf(inc.fromUid);
+  $('#inc-title').textContent = nameOf(inc.fromUid);
+  $('#inc-sub').textContent = (inc.video ? 'Appel vidéo entrant' : 'Appel vocal entrant') + (inc.group ? ' · ' + inc.group : '');
+  $('#inc-yes').innerHTML = ic(inc.video ? 'video' : 'phone', '', 28);
+  $('#incoming').hidden = false;
+}
+function dismissIncoming(){
+  if (!incoming) return;
+  clearTimeout(incoming.timeout); incoming = null; stopRing(); $('#incoming').hidden = true;
+}
+function declineIncoming(){ dismissIncoming(); }
+function acceptIncoming(){ const inc = incoming; if (!inc) return; dismissIncoming(); openLink(inc.url); }
+function callEl(m){
+  const box = el('div', 'callmsg');
+  box.append(el('div', 'callmsg-t', m.video ? 'Appel vidéo' : 'Appel vocal'));
+  if (validCallUrl(m.url)) {
+    const a = el('a', 'callmsg-a', "Rejoindre l'appel");
+    a.href = m.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    box.append(a);
+  }
+  return box;
+}
+
+/* ---------- groupes ---------- */
+function postSys(chatId, text){
+  return db.collection(msgPath(chatId)).add({from: me.id, ts: Date.now(), kind: 'sys', text}).catch(() => {});
+}
+function checkRow(id, prefix){
+  const row = el('div', 'tone');
+  const c = el('input'); c.type = 'checkbox'; c.id = prefix + id; c.value = id;
+  const l = el('label', 'lab', nameOf(id)); l.htmlFor = c.id;
+  row.append(c, avatarEl(id, 'sm'), l); return row;
+}
+function openNewGroup(){
+  const others = otherAccounts(); if (!others.length || !canWrite) return;
+  $('#gn-name').value = ''; $('#gn-err').textContent = '';
+  const list = $('#gn-list'); list.textContent = '';
+  others.forEach(id => list.append(checkRow(id, 'gn-')));
+  $('#gnew').hidden = false; $('#gn-name').focus();
+}
+async function createGroup(){
+  const name = $('#gn-name').value.trim().replace(/\s+/g, ' ').slice(0, 30);
+  const sel = [...$('#gn-list').querySelectorAll('input:checked')].map(i => i.value);
+  if (!name) { $('#gn-err').textContent = 'Donne un nom au groupe.'; return; }
+  if (!sel.length) { $('#gn-err').textContent = 'Choisis au moins un membre.'; return; }
+  $('#gn-create').disabled = true;
+  const gid = 'g' + randomName().slice(0, 12);
+  const data = {name, members: [me.id].concat(sel), creator: me.id, created: Date.now()};
+  try {
+    await db.doc('groups/' + gid).set(data);
+    groups.set(gid, data);
+    $('#gnew').hidden = true;
+    postSys('g~' + gid, nameOf(me.id) + ' a créé le groupe « ' + name + ' »');
+    ensurePreview('g~' + gid);
+    openChat({id: 'g~' + gid, group: true, gid});
+  } catch (e) { $('#gn-err').textContent = "Le groupe n'a pas pu être créé" + (e && e.code ? ' (' + e.code + ')' : '') + '.'; }
+  $('#gn-create').disabled = false;
+}
+async function updateGroup(gid, mutate){
+  const ref = db.doc('groups/' + gid); const s0 = await ref.get();
+  if (!s0.exists) throw new Error('gone');
+  const g = s0.data(); const next = {name: g.name, members: (g.members || []).slice()};
+  mutate(next);
+  await ref.update({name: next.name, members: next.members});
+  const merged = Object.assign({}, g, next); groups.set(gid, merged); return merged;
+}
+function openGroupInfo(){
+  if (!cur || !cur.gid) return;
+  const g = groups.get(cur.gid); if (!g) return;
+  const isCreator = g.creator === me.id;
+  $('#gi-t').textContent = g.name; $('#gi-sub').textContent = 'Créé par ' + nameOf(g.creator);
+  $('#gi-rename').hidden = !isCreator; $('#gi-name').value = g.name; $('#gi-err').textContent = '';
+  const ml = $('#gi-members'); ml.textContent = '';
+  g.members.forEach(id => {
+    const row = el('div', 'tone');
+    row.append(avatarEl(id, 'sm'), el('span', 'lab', nameOf(id) + (id === g.creator ? ' · créateur·rice' : '') + (id === me.id ? ' (toi)' : '')));
+    if (isCreator && id !== me.id) {
+      const b = el('button', 'pill small', 'Retirer'); b.type = 'button';
+      b.setAttribute('aria-label', 'Retirer ' + nameOf(id) + ' du groupe');
+      b.onclick = () => removeMember(id);
+      row.append(b);
+    }
+    ml.append(row);
+  });
+  const rest = otherAccounts().filter(id => !g.members.includes(id));
+  const al = $('#gi-add'); al.textContent = '';
+  rest.forEach(id => al.append(checkRow(id, 'gi-')));
+  $('#gi-add-wrap').hidden = rest.length === 0 || !canWrite;
+  $('#ginfo').hidden = false;
+}
+async function renameGroup(){
+  const gid = cur && cur.gid; const name = $('#gi-name').value.trim().replace(/\s+/g, ' ').slice(0, 30);
+  if (!gid || !name) return;
+  try { await updateGroup(gid, n => { n.name = name; }); postSys('g~' + gid, nameOf(me.id) + ' a renommé le groupe « ' + name + ' »'); renderHead(); renderList(); openGroupInfo(); }
+  catch (e) { $('#gi-err').textContent = "Impossible de renommer le groupe."; }
+}
+async function removeMember(id){
+  const gid = cur && cur.gid; if (!gid) return;
+  try { await updateGroup(gid, n => { n.members = n.members.filter(x => x !== id); }); postSys('g~' + gid, nameOf(me.id) + ' a retiré ' + nameOf(id)); renderHead(); openGroupInfo(); }
+  catch (e) { $('#gi-err').textContent = 'Impossible de retirer cette personne.'; }
+}
+async function addMembers(){
+  const gid = cur && cur.gid; if (!gid) return;
+  const sel = [...$('#gi-add').querySelectorAll('input:checked')].map(i => i.value);
+  if (!sel.length) { $('#gi-err').textContent = 'Coche au moins une personne à ajouter.'; return; }
+  try {
+    await updateGroup(gid, n => { sel.forEach(x => { if (!n.members.includes(x)) n.members.push(x); }); });
+    sel.forEach(x => ensurePreview('g~' + gid));
+    postSys('g~' + gid, nameOf(me.id) + ' a ajouté ' + sel.map(nameOf).join(', '));
+    renderHead(); openGroupInfo();
+  } catch (e) { $('#gi-err').textContent = "Impossible d'ajouter ces personnes."; }
+}
+let leaveArmed = null;
+async function leaveGroup(){
+  const btn = $('#gi-leave');
+  if (!leaveArmed) { btn.textContent = 'Confirmer : quitter'; leaveArmed = setTimeout(() => { leaveArmed = null; btn.textContent = 'Quitter le groupe'; }, 4000); return; }
+  clearTimeout(leaveArmed); leaveArmed = null; btn.textContent = 'Quitter le groupe';
+  const gid = cur && cur.gid; if (!gid) return;
+  try {
+    await postSys('g~' + gid, nameOf(me.id) + ' a quitté le groupe');
+    const ref = db.doc('groups/' + gid); const s0 = await ref.get();
+    if (s0.exists) {
+      const rest = (s0.data().members || []).filter(x => x !== me.id);
+      if (rest.length) await ref.update({members: rest}); else await ref.delete();
+    }
+    groups.delete(gid); $('#ginfo').hidden = true; closeChat();
+  } catch (e) { $('#gi-err').textContent = 'Impossible de quitter le groupe pour le moment.'; }
+}
+let grpSig = '';
+function applyGroups(docs){
+  const m = new Map();
+  docs.forEach(d => { const x = d.data(); if (x && Array.isArray(x.members) && typeof x.name === 'string') m.set(d.id, x); });
+  const sg = [...m.entries()].map(e => e[0] + ':' + e[1].name + ':' + e[1].members.join(',')).sort().join('|');
+  if (sg === grpSig) return;
+  grpSig = sg; groups = m;
+  myGroups().forEach(e => ensurePreview('g~' + e[0]));
+  if (cur && cur.gid) {
+    const g = groups.get(cur.gid);
+    if (!g || !g.members.includes(me.id)) { closeChat(); toast("Tu n'es plus dans ce groupe."); return; }
+  }
+  renderList(); renderHead();
+}
+
+/* ---------- Firebase : adaptateurs ---------- */
+/* Donne à Firestore la même forme d'API que le reste de l'appli utilise. */
+function makeDb(){
+  const wrap = snap => ({docs: snap.docs.map(d => ({id: d.id, data: () => d.data()})), size: snap.size});
+  function col(path, cons){
+    const c = cons || [];
+    const ref = () => FS.query.apply(null, [FS.collection(fsdb, path)].concat(c));
+    return {
+      orderBy: (f, dir) => col(path, c.concat([FS.orderBy(f, dir)])),
+      limit: n => col(path, c.concat([FS.limit(n)])),
+      where: (f, op, v) => col(path, c.concat([FS.where(f, op, v)])),
+      onSnapshot: (cb, err) => FS.onSnapshot(ref(), snap => cb(wrap(snap)), err),
+      get: async () => wrap(await FS.getDocs(ref())),
+      add: async data => { const r = await FS.addDoc(FS.collection(fsdb, path), data); return {id: r.id}; },
+      doc: id => dc(path + '/' + id)
+    };
+  }
+  function dc(path){
+    const ref = FS.doc(fsdb, path);
+    return {
+      get: async () => { const s0 = await FS.getDoc(ref); return {exists: s0.exists(), id: s0.id, data: () => s0.data()}; },
+      set: x => FS.setDoc(ref, x),
+      update: x => FS.updateDoc(ref, x),
+      delete: () => FS.deleteDoc(ref)
+    };
+  }
+  return {collection: p => col(p), doc: dc};
+}
+/* Présence (qui est en ligne) et appels entrants, via Firestore. */
+function makeRoom(uid){
+  const seen = new Set(), peerCbs = [], ringCbs = [], last = new Map();
+  const online = () => {
+    const now = Date.now();
+    return [...last.entries()].filter(e => now - e[1] < 100000).map(e => ({peer: e[0], sameTab: e[0] === uid, isMe: e[0] === uid, presence: {uid: e[0]}}));
+  };
+  const notify = () => peerCbs.forEach(f => { try { f(); } catch (e) {} });
+  const beat = () => { if (document.hidden) return; FS.setDoc(FS.doc(fsdb, 'presence', uid), {t: Date.now()}).catch(() => {}); };
+  return {
+    presence(){
+      beat(); setInterval(beat, 45000); document.addEventListener('visibilitychange', beat); setInterval(notify, 30000);
+      setTimeout(() => {
+        FS.onSnapshot(FS.collection(fsdb, 'presence'), snap => {
+          last.clear(); snap.docs.forEach(d => last.set(d.id, (d.data() || {}).t || 0)); notify();
+        }, () => {});
+        FS.onSnapshot(FS.query(FS.collection(fsdb, 'calls'), FS.where('toUids', 'array-contains', uid)), snap => {
+          snap.docChanges().forEach(ch => {
+            if (ch.type !== 'added' || seen.has(ch.doc.id)) return;
+            seen.add(ch.doc.id);
+            const x = ch.doc.data();
+            if (Date.now() - (x.ts || 0) > 50000) return;
+            ringCbs.forEach(f => f({sameTab: false, data: x}));
+          });
+        }, () => {});
+      }, 0);
+    },
+    peers: online,
+    onPeers: cb => { peerCbs.push(cb); },
+    onConnection: () => {},
+    connected: () => true,
+    on: (t, cb) => { if (t === 'ring') ringCbs.push(cb); },
+    emit: async (t, data) => {
+      if (t !== 'ring') return;
+      const ref = await FS.addDoc(FS.collection(fsdb, 'calls'), Object.assign({}, data, {ts: Date.now()}));
+      setTimeout(() => FS.deleteDoc(ref).catch(() => {}), 90000);
+    }
+  };
+}
+async function cleanupOldCalls(){
+  try {
+    const s0 = await db.collection('calls').where('fromUid', '==', me.id).get();
+    for (const d of s0.docs) if (Date.now() - (d.data().ts || 0) > 120000) await db.doc('calls/' + d.id).delete();
+  } catch (e) {}
+}
+
+/* ---------- comptes (Firebase Authentication : nom + code) ---------- */
+const EMAIL_DOMAIN = '@entre-nous.example.com';
+function slug(name){ return name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32); }
+function userError(msg){ const e = new Error(msg); e.user = true; return e; }
+function colorFor(id){ let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360; return 'hsl(' + h + ' 45% 38%)'; }
+function initialsAvatar(name, id){
+  const ini = ((name || '?').trim()[0] || '?').toUpperCase().replace(/[<>&"']/g, '?');
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" fill="' + colorFor(id) + '"/><text x="48" y="63" font-family="sans-serif" font-size="46" font-weight="700" text-anchor="middle" fill="#fff">' + ini + '</text></svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+function authError(e){
+  const c = e && e.code;
+  if (c === 'auth/email-already-in-use') return userError("Ce nom est déjà pris. Choisis-en un autre, ou connecte-toi si c'est le tien.");
+  if (c === 'auth/weak-password') return userError('Le code est trop faible : 6 caractères minimum.');
+  if (c === 'auth/invalid-credential' || c === 'auth/user-not-found' || c === 'auth/wrong-password' || c === 'auth/invalid-email') return userError('Nom ou code incorrect.');
+  if (c === 'auth/too-many-requests') return userError("Trop d'essais. Attends quelques minutes puis réessaie.");
+  if (c === 'auth/operation-not-allowed') return userError("La connexion par e-mail et mot de passe n'est pas activée dans Firebase (voir le guide, étape Authentication).");
+  if (c === 'auth/network-request-failed') return userError('Pas de connexion Internet.');
+  return e;
+}
+async function createAccount(rawName, code, invite){
+  const name = rawName.trim().replace(/\s+/g, ' ');
+  if (name.length < 2 || name.length > 24) throw userError('Le nom doit faire entre 2 et 24 caractères.');
+  const key = slug(name);
+  if (!key) throw userError('Le nom doit contenir des lettres ou des chiffres.');
+  if (code.length < 6) throw userError('Le code doit faire au moins 6 caractères.');
+  if (!invite.trim()) throw userError("Entre le code d'invitation.");
+  let cred;
+  try { cred = await FA.createUserWithEmailAndPassword(auth, key + EMAIL_DOMAIN, code); } catch (e) { throw authError(e); }
+  try { await FS.setDoc(FS.doc(fsdb, 'accounts', cred.user.uid), {name, created: Date.now(), invite: invite.trim()}); }
+  catch (e) {
+    try { await FA.deleteUser(cred.user); } catch (x) {}
+    if (e && e.code === 'permission-denied') throw userError("Code d'invitation incorrect.");
+    throw e;
+  }
+  return {id: cred.user.uid, name};
+}
+async function login(rawName, code){
+  const key = slug(rawName);
+  if (!key) throw userError('Entre ton nom.');
+  let cred;
+  try { cred = await FA.signInWithEmailAndPassword(auth, key + EMAIL_DOMAIN, code); } catch (e) { throw authError(e); }
+  const s0 = await db.doc('accounts/' + cred.user.uid).get();
+  if (!s0.exists) { await FA.signOut(auth); throw userError('Ce compte est incomplet. Demande de l\'aide à la personne qui gère l\'appli.'); }
+  return {id: cred.user.uid, name: s0.data().name};
+}
+
+let wMode = 'login';
+function setMode(m){
+  wMode = m;
+  $('#tab-login').setAttribute('aria-selected', String(m === 'login'));
+  $('#tab-create').setAttribute('aria-selected', String(m === 'create'));
+  $('#w-code2-row').hidden = m !== 'create';
+  $('#w-inv-row').hidden = m !== 'create';
+  $('#w-code').autocomplete = m === 'create' ? 'new-password' : 'current-password';
+  $('#w-submit').textContent = m === 'create' ? 'Créer mon compte' : 'Se connecter';
+  $('#w-err').textContent = '';
+  $('#w-note').textContent = m === 'create'
+    ? "Le code d'invitation t'est donné par la personne qui a créé l'appli. Ton code personnel fait 6 caractères au minimum ; n'utilise pas un mot de passe que tu utilises ailleurs."
+    : '';
+}
+let ready = false, blockedMsg = 'Connexion à la messagerie en cours, patiente quelques secondes…';
+function welcomeBlock(msg){ blockedMsg = msg; $('#w-note').textContent = msg; }
+let busyAuth = false, entered = false;
+async function submitWelcome(){
+  if ($('#w-submit').disabled) return;
+  if (!ready) { $('#w-err').textContent = blockedMsg; return; }
+  const name = $('#w-name').value, code = $('#w-code').value;
+  $('#w-err').textContent = ''; $('#w-submit').disabled = true; busyAuth = true;
+  try {
+    if (wMode === 'create' && code !== $('#w-code2').value) throw userError('Les deux codes ne sont pas identiques.');
+    const acct = wMode === 'create' ? await createAccount(name, code, $('#w-inv').value) : await login(name, code);
+    await enterApp(acct);
+  } catch (e) {
+    $('#w-err').textContent = e && e.user ? e.message
+      : (e && e.code === 'permission-denied' ? "Accès refusé : les règles de sécurité Firestore ne sont sans doute pas encore publiées (voir le guide)."
+      : 'Une erreur est survenue' + (e && e.code ? ' (' + e.code + ')' : '') + '. Réessaie.');
+    $('#w-submit').disabled = false;
+  }
+  busyAuth = false;
+}
+
+/* ---------- entrée dans l'appli ---------- */
+async function enterApp(acct){
+  entered = true;
+  me.id = acct.id; me.name = acct.name; loadSettings();
+  prof[me.id] = {id: me.id, name: me.name, avatarUrl: initialsAvatar(me.name, me.id)};
+  $('#welcome').hidden = true;
+  const box = $('#me-id'); box.textContent = ''; box.append(avatarEl(me.id, 'sm'), el('span', '', me.name));
+
+  room = makeRoom(me.id);
+  room.presence({uid: me.id});
+  room.onPeers(() => { renderList(); renderHead(); });
+  room.on('ring', msg => {
+    const d = msg.data || {};
+    const to = Array.isArray(d.toUids) ? d.toUids : (d.toUid ? [d.toUid] : []);
+    if (msg.sameTab || !me.id || !to.includes(me.id) || !validCallUrl(d.url) || incoming) return;
+    incoming = {fromUid: String(d.fromUid || ''), video: !!d.video, url: d.url, group: String(d.groupName || '').slice(0, 30)};
+    showIncoming(); startRing();
+    incoming.timeout = setTimeout(dismissIncoming, 45000);
+  });
+  cleanupOldCalls();
+
+  ensurePreview('salon');
+  let accSig = '';
+  function applyAccounts(docs){
+    const m = new Map();
+    docs.forEach(d => {
+      const x = d.data();
+      if (!x || typeof x.name !== 'string') return;
+      m.set(d.id, x);
+      prof[d.id] = {id: d.id, name: x.name, avatarUrl: initialsAvatar(x.name, d.id)};
+    });
+    $('#side-diag').textContent = 'Comptes visibles : ' + m.size;
+    const sg = [...m.entries()].map(e => e[0] + ':' + e[1].name).sort().join('|');
+    if (sg === accSig) return;
+    accSig = sg; people = m;
+    m.forEach((_, uid) => { if (uid !== me.id) ensurePreview(dmId(me.id, uid)); });
+    renderList(); renderHead(); if (cur) renderFeed();
+  }
+  db.collection('accounts').onSnapshot(snap => applyAccounts(snap.docs),
+    e => { $('#side-diag').textContent = 'Liste des comptes indisponible (' + (e && e.code) + ')'; });
+  db.collection('groups').onSnapshot(snap => applyGroups(snap.docs), () => {});
+  renderList();
+  if (window.matchMedia('(min-width: 760px)').matches) openChat({id: 'salon', group: true});
+}
+
+/* ---------- démarrage ---------- */
+async function boot(){
+  window.__enBooted = true;
+  $('#back').innerHTML = ic('back'); $('#btn-send').innerHTML = ic('send'); $('#logout').innerHTML = ic('logout');
+  $('#call-audio-btn').innerHTML = ic('phone'); $('#call-video-btn').innerHTML = ic('video');
+  $('#inc-no').innerHTML = hangup(28);
+
+  $('#back').onclick = () => { document.body.classList.remove('in-chat'); };
+  $('#ta').addEventListener('input', () => { autosize(); toggleSendBtn(); });
+  $('#ta').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendText(); } });
+  $('#btn-send').onclick = sendText;
+  $('#call-audio-btn').onclick = () => startCall(false);
+  $('#call-video-btn').onclick = () => startCall(true);
+  $('#inc-yes').onclick = acceptIncoming; $('#inc-no').onclick = declineIncoming;
+  $('#logout').onclick = () => { FA.signOut(auth).catch(() => {}).then(() => location.reload()); };
+  $('#info-btn').innerHTML = ic('users'); $('#info-btn').onclick = openGroupInfo;
+  $('#gn-cancel').onclick = () => { $('#gnew').hidden = true; };
+  $('#gn-create').onclick = createGroup;
+  $('#gn-name').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); createGroup(); } });
+  $('#gi-close').onclick = () => { $('#ginfo').hidden = true; };
+  $('#gi-leave').onclick = leaveGroup;
+  $('#gi-add-btn').onclick = addMembers;
+  $('#gi-rename-btn').onclick = renameGroup;
+  $('#settings-btn').innerHTML = ic('bell');
+  $('#settings-btn').onclick = openSettings;
+  $('#st-close').onclick = closeSettings;
+  $('#vol').oninput = e => { settings.vol = Number(e.target.value) / 100; saveSettings(); };
+  $('#vol').onchange = () => { unlockAudio(); playCycle(settings.tone); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else ['#gnew', '#ginfo', '#linkbox'].forEach(x => { $(x).hidden = true; }); } });
+  $('#lb-close').onclick = () => { $('#linkbox').hidden = true; };
+  $('#lb-copy').onclick = () => { const i = $('#lb-url'); i.select(); try { navigator.clipboard.writeText(i.value).then(() => toast('Lien copié.'), () => toast('Sélectionne le lien et copie-le.')); } catch (e) { toast('Sélectionne le lien et copie-le.'); } };
+  $('#tab-login').onclick = () => setMode('login');
+  $('#tab-create').onclick = () => setMode('create');
+  $('#w-submit').onclick = submitWelcome;
+  ['#w-name', '#w-code', '#w-code2', '#w-inv'].forEach(x => $(x).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitWelcome(); } }));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && cur) { markRead(cur.id); renderList(); } });
+  welcomeBlock('Connexion à la messagerie…');
+
+  if (!firebaseConfig || !firebaseConfig.apiKey || String(firebaseConfig.apiKey).indexOf('COLLE') === 0) {
+    welcomeBlock("Le fichier firebase-config.js n'est pas encore rempli. Suis le guide d'installation, étape « Relier le site à Firebase ».");
+    return;
+  }
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = FA.getAuth(app); fsdb = FS.getFirestore(app);
+  } catch (e) { welcomeBlock('La configuration Firebase est invalide. Vérifie le fichier firebase-config.js.'); return; }
+  db = makeDb();
+
+  FA.onAuthStateChanged(auth, async user => {
+    if (busyAuth || entered) return;
+    if (user) {
+      try {
+        const s0 = await db.doc('accounts/' + user.uid).get();
+        if (s0.exists && !entered) { await enterApp({id: user.uid, name: s0.data().name}); return; }
+      } catch (e) {}
+      try { await FA.signOut(auth); } catch (e) {}
+    }
+    ready = true; welcomeBlock(''); setMode('login'); $('#w-name').focus();
+  });
+}
+boot();
+})();
+</script>
+<script>setTimeout(function(){ if (!window.__enBooted) { var n = document.getElementById('w-note'); if (n) n.textContent = 'Le chargement a échoué. Vérifie ta connexion Internet, puis recharge la page.'; } }, 10000);</script>
+</body>
+</html>
