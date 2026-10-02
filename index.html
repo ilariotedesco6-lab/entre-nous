@@ -163,6 +163,9 @@ svg{display:block}
 .tone .lab{flex:1;overflow:hidden;text-overflow:ellipsis}
 .tone-list.scroll{max-height:32dvh;overflow:auto}
 .pill.danger{background:var(--danger);color:#fff}
+.adm-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;margin:6px 0}
+.adm-row .lab{flex:1;overflow:hidden;text-overflow:ellipsis}
+.badge-adm{font-size:11px;font-weight:700;background:var(--accent);color:var(--on-accent);padding:2px 7px;border-radius:999px;margin-left:6px}
 .pill.small{padding:6px 12px;font-size:14px}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(440px,92vw);opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.show{opacity:1}
@@ -187,7 +190,7 @@ svg{display:block}
   <aside id="side">
     <header class="side-head">
       <h1>Entre nous</h1>
-      <div class="me"><div class="meid" id="me-id"></div><button id="settings-btn" class="icon-btn" aria-label="Réglages des sonneries" title="Sonneries"></button><button id="logout" class="icon-btn" aria-label="Se déconnecter" title="Se déconnecter"></button></div>
+      <div class="me"><div class="meid" id="me-id"></div><button id="admin-btn" class="icon-btn" aria-label="Administration" title="Administration" hidden></button><button id="settings-btn" class="icon-btn" aria-label="Réglages des sonneries" title="Sonneries"></button><button id="logout" class="icon-btn" aria-label="Se déconnecter" title="Se déconnecter"></button></div>
     </header>
     <ul id="chats"></ul>
     <p id="side-hint" class="hint" hidden></p>
@@ -290,6 +293,16 @@ svg{display:block}
   </div>
 </div>
 
+<div id="admin" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="adm-t">
+  <div class="inc-card st-card">
+    <h2 id="adm-t">Administration</h2>
+    <p>Retire un compte pour l'exclure de l'appli : la personne sera déconnectée et ne pourra plus se reconnecter avec ce nom.</p>
+    <div id="adm-list" class="tone-list scroll"></div>
+    <p id="adm-err" class="w-err" role="alert"></p>
+    <div class="lb-actions"><button id="adm-close" class="pill main">Fermer</button></div>
+  </div>
+</div>
+
 <div id="settings" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="st-t">
   <div class="inc-card st-card">
     <h2 id="st-t">Sonneries</h2>
@@ -338,6 +351,7 @@ const P = {
   trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/>',
   play:'<path d="M7 4v16l13-8Z"/>',
   logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  shield:'<path d="M12 3 4 6.5v5c0 5 3.4 8.6 8 9.5 4.6-.9 8-4.5 8-9.5v-5L12 3Z"/><path d="m9 12 2 2 4-4"/>',
   bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   plus:'<path d="M12 5v14"/><path d="M5 12h14"/>',
   users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
@@ -362,6 +376,7 @@ function notice(msg){ const n = $('#notice'); n.textContent = msg; n.hidden = !m
 
 /* ---------- état ---------- */
 let db = null, room = null, auth = null, fsdb = null;
+let isAdmin = false, kickedOff = false;
 const me = {id: null, name: ''};
 let canWrite = true;
 const prof = {};                 // id -> profil résolu
@@ -961,6 +976,50 @@ async function submitWelcome(){
   busyAuth = false;
 }
 
+/* ---------- administration ---------- */
+async function checkAdmin(){
+  try { const d = await db.doc('admins/' + me.id).get(); return d.exists; }
+  catch (e) { return false; }
+}
+function watchSelfRemoval(){
+  try {
+    FS.onSnapshot(FS.doc(fsdb, 'accounts/' + me.id), snap => {
+      if (!snap.exists() && !kickedOff && entered) {
+        kickedOff = true;
+        FA.signOut(auth).catch(() => {}).then(() => {
+          try { alert("Ton compte a été retiré par un administrateur."); } catch (e) {}
+          location.reload();
+        });
+      }
+    });
+  } catch (e) {}
+}
+function buildAdminList(){
+  const list = $('#adm-list'); list.textContent = ''; $('#adm-err').textContent = '';
+  const others = otherAccounts();
+  if (!others.length) { list.append(el('p', 'hint', 'Aucun autre compte pour le moment.')); return; }
+  others.forEach(uid => {
+    const row = el('div', 'adm-row');
+    row.append(avatarEl(uid, 'sm'), el('span', 'lab', nameOf(uid)));
+    const b = el('button', 'pill danger small', 'Retirer'); b.type = 'button';
+    b.setAttribute('aria-label', 'Retirer ' + nameOf(uid));
+    b.onclick = () => removeAccount(uid, b);
+    row.append(b); list.append(row);
+  });
+}
+async function removeAccount(uid, btn){
+  if (btn.dataset.armed !== '1') {
+    btn.dataset.armed = '1'; const t = btn.textContent; btn.textContent = 'Confirmer ?';
+    setTimeout(() => { if (btn.dataset.armed === '1') { btn.dataset.armed = '0'; btn.textContent = t; } }, 4000);
+    return;
+  }
+  btn.dataset.armed = '0'; btn.disabled = true;
+  try { await db.doc('accounts/' + uid).delete(); buildAdminList(); }
+  catch (e) { $('#adm-err').textContent = "Impossible de retirer ce compte" + (e && e.code ? ' (' + e.code + ')' : '') + '.'; btn.disabled = false; }
+}
+function openAdmin(){ buildAdminList(); $('#admin').hidden = false; }
+function closeAdmin(){ $('#admin').hidden = true; $('#admin-btn').focus(); }
+
 /* ---------- entrée dans l'appli ---------- */
 async function enterApp(acct){
   entered = true;
@@ -981,6 +1040,9 @@ async function enterApp(acct){
     incoming.timeout = setTimeout(dismissIncoming, 45000);
   });
   cleanupOldCalls();
+  watchSelfRemoval();
+  isAdmin = await checkAdmin();
+  $('#admin-btn').hidden = !isAdmin;
 
   ensurePreview('salon');
   let accSig = '';
@@ -1029,12 +1091,15 @@ async function boot(){
   $('#gi-leave').onclick = leaveGroup;
   $('#gi-add-btn').onclick = addMembers;
   $('#gi-rename-btn').onclick = renameGroup;
+  $('#admin-btn').innerHTML = ic('shield');
+  $('#admin-btn').onclick = openAdmin;
+  $('#adm-close').onclick = closeAdmin;
   $('#settings-btn').innerHTML = ic('bell');
   $('#settings-btn').onclick = openSettings;
   $('#st-close').onclick = closeSettings;
   $('#vol').oninput = e => { settings.vol = Number(e.target.value) / 100; saveSettings(); };
   $('#vol').onchange = () => { unlockAudio(); playCycle(settings.tone); };
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else ['#gnew', '#ginfo', '#linkbox'].forEach(x => { $(x).hidden = true; }); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else ['#gnew', '#ginfo', '#linkbox'].forEach(x => { $(x).hidden = true; }); } });
   $('#lb-close').onclick = () => { $('#linkbox').hidden = true; };
   $('#lb-copy').onclick = () => { const i = $('#lb-url'); i.select(); try { navigator.clipboard.writeText(i.value).then(() => toast('Lien copié.'), () => toast('Sélectionne le lien et copie-le.')); } catch (e) { toast('Sélectionne le lien et copie-le.'); } };
   $('#tab-login').onclick = () => setMode('login');
@@ -1072,3 +1137,5 @@ boot();
 <script>setTimeout(function(){ if (!window.__enBooted) { var n = document.getElementById('w-note'); if (n) n.textContent = 'Le chargement a échoué. Vérifie ta connexion Internet, puis recharge la page.'; } }, 10000);</script>
 </body>
 </html>
+
+  
