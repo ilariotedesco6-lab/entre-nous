@@ -163,10 +163,42 @@ svg{display:block}
 .tone .lab{flex:1;overflow:hidden;text-overflow:ellipsis}
 .tone-list.scroll{max-height:32dvh;overflow:auto}
 .pill.danger{background:var(--danger);color:#fff}
+.apps-row{display:flex;gap:8px;padding:0 18px 12px}
+.applink{flex:1;display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:14px;background:var(--surface-2);color:var(--ink);text-decoration:none;font-size:14px;font-weight:600;min-width:0}
+.applink:hover{background:var(--line)}
+.applink span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.applink .ic{flex:none}
 .adm-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;margin:6px 0}
 .adm-row .lab{flex:1;overflow:hidden;text-overflow:ellipsis}
 .badge-adm{font-size:11px;font-weight:700;background:var(--accent);color:var(--on-accent);padding:2px 7px;border-radius:999px;margin-left:6px}
 .pill.small{padding:6px 12px;font-size:14px}
+#composer{position:relative}
+.plus-menu{position:absolute;left:12px;bottom:calc(100% + 8px);z-index:30;min-width:230px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.2);display:flex;flex-direction:column}
+.plus-menu button{display:flex;align-items:center;gap:14px;padding:11px 12px;border-radius:12px;text-align:left;font-weight:600}
+.plus-menu button:hover{background:var(--surface-2)}
+.plus-menu .ic{color:var(--mine)}
+label.lbl{display:block}
+.chk{display:flex;align-items:center;gap:10px;margin:12px 0 4px;font-weight:600}
+.chk input{width:20px;height:20px;accent-color:var(--mine)}
+.card{white-space:normal;min-width:210px;max-width:100%}
+.card-k{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.75}
+.card-t{font-weight:700;margin:2px 0;overflow-wrap:anywhere}
+.card-s{font-size:13px;opacity:.8;margin-bottom:2px;overflow-wrap:anywhere}
+.card-a{display:inline-block;margin-top:8px;padding:7px 14px;border-radius:999px;background:var(--mine);color:var(--on-mine);font-weight:600;font-size:15px;text-decoration:none;border:0;cursor:pointer}
+.mine .card-a{background:var(--on-mine);color:var(--mine)}
+.card-a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.po-list{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.po{position:relative;display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:8px 10px;border-radius:10px;overflow:hidden;background:color-mix(in srgb,currentColor 9%,transparent);border:1px solid color-mix(in srgb,currentColor 30%,transparent)}
+.po[aria-pressed="true"]{border-color:currentColor}
+.po-bar{position:absolute;left:0;top:0;bottom:0;width:0;background:color-mix(in srgb,currentColor 20%,transparent)}
+.po-l,.po-n{position:relative}
+.po-l{flex:1;overflow-wrap:anywhere}
+.po-n{font-variant-numeric:tabular-nums;font-weight:600}
+.po-who{font-size:12px;opacity:.75;margin:-2px 0 2px 4px;overflow-wrap:anywhere}
+.po-foot{font-size:12px;opacity:.7;margin-top:2px}
+.msg-img{display:block;max-width:min(260px,70vw);width:auto;height:auto;max-height:320px;border-radius:12px;cursor:zoom-in}
+#lightbox{cursor:zoom-out;z-index:70}
+#lx-img{max-width:94vw;max-height:90dvh;border-radius:12px;object-fit:contain}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(440px,92vw);opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.show{opacity:1}
 
@@ -183,29 +215,6 @@ svg{display:block}
   .inc-card .av{animation:none}
   *{transition:none!important}
 }
-#composer{position:relative}
-.pmenu{position:absolute;left:12px;bottom:calc(100% + 6px);background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:6px;display:grid;min-width:190px;z-index:20}
-.pmenu button{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;text-align:left;font:inherit;font-weight:600;color:var(--ink)}
-.pmenu button:hover{background:var(--surface-2)}
-.pi{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--mine);color:var(--on-mine)}
-.bubble.wide{min-width:min(260px,70vw)}
-.poll{display:grid;gap:6px;min-width:0;white-space:normal}
-.pq{font-weight:700}
-.popt{position:relative;display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);overflow:hidden;font:inherit}
-.popt.on{border-color:var(--mine);font-weight:600}
-.pbar{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--mine) 22%,transparent)}
-.popt .pl,.popt .pn{position:relative}
-.pmeta{font-size:12px;opacity:.85}
-.evc{display:grid;gap:3px;min-width:200px;white-space:normal}
-.evt{font-weight:700;display:flex;gap:6px;align-items:center}
-.evw{text-transform:capitalize}
-.bubble.photo{padding:4px 4px 6px}
-.pimg{display:block;width:min(260px,62vw);max-width:100%;border-radius:12px;cursor:pointer}
-.pimg.big{width:min(560px,80vw)}
-.shortcuts{display:flex;gap:8px;padding:12px 14px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);margin-top:auto}
-.shortcuts a{flex:1;text-align:center;padding:10px 8px;border-radius:12px;background:var(--surface-2);color:var(--ink);text-decoration:none;font-weight:600;font-size:14px}
-.shortcuts a:hover{background:var(--line)}
-.shortcuts a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -215,10 +224,13 @@ svg{display:block}
       <h1>Entre nous</h1>
       <div class="me"><div class="meid" id="me-id"></div><button id="admin-btn" class="icon-btn" aria-label="Administration" title="Administration" hidden></button><button id="settings-btn" class="icon-btn" aria-label="Réglages des sonneries" title="Sonneries"></button><button id="logout" class="icon-btn" aria-label="Se déconnecter" title="Se déconnecter"></button></div>
     </header>
+    <div class="apps-row">
+      <a class="applink" href="https://claude.ai/public/artifacts/73d757a8-c90f-495e-bdc4-da0902c59bc0" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Répertoire</span></a>
+      <a class="applink" href="https://ilariotedesco6-lab.github.io/ilaplant/" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Ilaplant</span></a>
+    </div>
     <ul id="chats"></ul>
     <p id="side-hint" class="hint" hidden></p>
     <p id="side-diag" class="hint" style="font-size:12px;opacity:.8"></p>
-    <nav class="shortcuts" aria-label="Raccourcis"><a href="https://claude.ai/public/artifacts/73d757a8-c90f-495e-bdc4-da0902c59bc0" target="_blank" rel="noopener">Le Ilarepertoire</a><a href="https://ilariotedesco6-lab.github.io/ilaplant/" target="_blank" rel="noopener">Ilaplant</a></nav>
   </aside>
 
   <main id="main">
@@ -237,14 +249,12 @@ svg{display:block}
       <p>Le salon réunit tout le monde. Ouvre une discussion privée pour appeler un·e ami·e en vocal ou en vidéo.</p>
     </div>
     <div id="composer" hidden>
-      <div id="plus-menu" class="pmenu" hidden role="menu">
-      <button type="button" role="menuitem" data-act="poll"><span class="pi" data-i="poll"></span>Sondage</button>
-      <button type="button" role="menuitem" data-act="photo"><span class="pi" data-i="image"></span>Photo</button>
-      <button type="button" role="menuitem" data-act="event"><span class="pi" data-i="cal"></span>Événement</button>
-    </div>
-    <input id="photo-in" type="file" accept="image/*" hidden>
-    <div id="compose-text" class="compose">
-        <button id="btn-plus" type="button" class="round-btn ghost" aria-label="Ajouter : sondage, photo, événement" aria-haspopup="true" aria-expanded="false"></button>
+      <div id="plus-menu" class="plus-menu" role="menu" hidden></div>
+      <input id="f-photo" type="file" accept="image/*" hidden>
+      <input id="f-cam" type="file" accept="image/*" capture="environment" hidden>
+      <input id="f-doc" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" hidden>
+      <div id="compose-text" class="compose">
+        <button id="btn-plus" class="round-btn ghost" type="button" aria-label="Joindre" aria-haspopup="menu" aria-expanded="false"></button>
         <textarea id="ta" rows="1" maxlength="2000" placeholder="Écrire un message" aria-label="Message"></textarea>
         <button id="btn-send" class="round-btn" aria-label="Envoyer" disabled></button>
       </div>
@@ -303,35 +313,6 @@ svg{display:block}
   </div>
 </div>
 
-<div id="pollnew" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pn-t">
-  <div class="inc-card st-card">
-    <h2 id="pn-t">Nouveau sondage</h2>
-    <label for="pn-q" class="lbl">Question</label>
-    <input id="pn-q" class="lb-url" maxlength="120" autocomplete="off" placeholder="Ex. : On mange où ce soir ?">
-    <div class="lbl">Réponses (2 à 6)</div>
-    <div id="pn-opts"></div>
-    <button id="pn-add" type="button" class="pill">Ajouter une réponse</button>
-    <p id="pn-err" class="w-err" role="alert"></p>
-    <div class="lb-actions"><button id="pn-cancel" class="pill">Annuler</button><button id="pn-send" class="pill main">Envoyer</button></div>
-  </div>
-</div>
-
-<div id="evnew" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ev-tt">
-  <div class="inc-card st-card">
-    <h2 id="ev-tt">Nouvel événement</h2>
-    <label for="ev-t" class="lbl">Nom</label>
-    <input id="ev-t" class="lb-url" maxlength="80" autocomplete="off" placeholder="Ex. : Anniversaire de Léa">
-    <label for="ev-d" class="lbl">Date</label>
-    <input id="ev-d" class="lb-url" type="date">
-    <label for="ev-h" class="lbl">Heure</label>
-    <input id="ev-h" class="lb-url" type="time">
-    <label for="ev-p" class="lbl">Lieu (facultatif)</label>
-    <input id="ev-p" class="lb-url" maxlength="80" autocomplete="off" placeholder="Ex. : Chez moi">
-    <p id="ev-err" class="w-err" role="alert"></p>
-    <div class="lb-actions"><button id="ev-cancel" class="pill">Annuler</button><button id="ev-send" class="pill main">Envoyer</button></div>
-  </div>
-</div>
-
 <div id="ginfo" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="gi-t">
   <div class="inc-card st-card">
     <h2 id="gi-t"></h2>
@@ -352,6 +333,17 @@ svg{display:block}
     <div class="lb-actions"><button id="gi-leave" class="pill danger">Quitter le groupe</button><button id="gi-close" class="pill main">Fermer</button></div>
   </div>
 </div>
+
+<div id="mk" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="mk-t">
+  <div class="inc-card st-card">
+    <h2 id="mk-t"></h2>
+    <div id="mk-body"></div>
+    <p id="mk-err" class="w-err" role="alert"></p>
+    <div class="lb-actions"><button id="mk-cancel" class="pill" type="button">Annuler</button><button id="mk-ok" class="pill main" type="button">Envoyer</button></div>
+  </div>
+</div>
+
+<div id="lightbox" class="overlay" hidden role="dialog" aria-label="Photo en grand"><img id="lx-img" alt="Photo en grand"></div>
 
 <div id="admin" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="adm-t">
   <div class="inc-card st-card">
@@ -411,12 +403,17 @@ const P = {
   trash:'<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/>',
   play:'<path d="M7 4v16l13-8Z"/>',
   logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  grid:'<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
+  camera:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  file:'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/>',
+  pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  poll:'<path d="M3 3v18h18"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
+  contact:'<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/>',
   shield:'<path d="M12 3 4 6.5v5c0 5 3.4 8.6 8 9.5 4.6-.9 8-4.5 8-9.5v-5L12 3Z"/><path d="m9 12 2 2 4-4"/>',
   bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   plus:'<path d="M12 5v14"/><path d="M5 12h14"/>',
-  poll:'<path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/>',
-  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
-  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
   users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/>',
   pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>'
 };
@@ -486,7 +483,16 @@ function previewText(p, multi){
   if (!p) return 'Aucun message';
   if (p.kind === 'sys') return p.text || '';
   const pre = p.from === me.id ? 'Toi : ' : (multi ? nameOf(p.from) + ' : ' : '');
-  return pre + (p.kind === 'call' ? (p.video ? 'Appel vidéo' : 'Appel vocal') : p.poll ? 'Sondage : ' + p.poll.q : p.event ? 'Événement : ' + p.event.t : p.img ? 'Photo' : (p.text || ''));
+  const L = {
+    call: m => m.video ? 'Appel vidéo' : 'Appel vocal',
+    poll: m => 'Sondage : ' + (m.question || ''),
+    image: () => 'Photo',
+    location: () => 'Position',
+    event: m => 'Événement : ' + (m.title || ''),
+    contact: m => 'Contact : ' + (m.cname || ''),
+    file: m => 'Document : ' + (m.fname || '')
+  };
+  return pre + (L[p.kind] ? L[p.kind](p) : (p.text || ''));
 }
 function avatarEl(id, cls){
   const img = el('img', 'av ' + (cls || ''));
@@ -555,38 +561,37 @@ function renderHead(){
 }
 function closeChat(){
   if (unsubCur) { unsubCur(); unsubCur = null; }
-  cur = null; msgs = [];
+  cur = null; msgs = []; clearVotes();
   $('#chat-head').hidden = true; $('#feed').hidden = true; $('#composer').hidden = true; $('#empty').hidden = false;
   document.body.classList.remove('in-chat'); renderList();
 }
 
 async function openChat(chat){
   if (!db) return;
-  cur = chat; msgs = []; stick = true;
+  cur = chat; msgs = []; stick = true; clearVotes(); closePlus();
   if (unsubCur) { unsubCur(); unsubCur = null; }
   document.body.classList.add('in-chat');
   $('#empty').hidden = true; $('#feed').hidden = false; $('#composer').hidden = false;
-  $('#ta').disabled = !canWrite; $('#btn-plus').disabled = !canWrite; $('#btn-send').disabled = true;
+  $('#ta').disabled = !canWrite; $('#btn-send').disabled = true;
   $('#ta').placeholder = canWrite ? 'Écrire un message' : 'Lecture seule';
   renderHead(); renderList(); renderFeed();
   unsubCur = db.collection(msgPath(chat.id)).orderBy('ts', 'desc').limit(80).onSnapshot(async snap => {
     const list = snap.docs.map(d => Object.assign({id: d.id}, d.data())).reverse();
     await resolve(list.map(m => m.from));
     if (cur !== chat) return;
+    list.forEach(m => { if (m.kind === 'poll' || m.kind === 'event') watchVotes(chat.id, m); });
     msgs = list; renderFeed(); markRead(chat.id); renderList();
   }, e => toast('Impossible de charger les messages (' + e.code + ').'));
 }
 
 function renderFeed(){
-  const feed = $('#feed');
+  const feed = $('#feed'); const prevTop = feed.scrollTop; pollNodes.clear();
   const near = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 140;
   const lastMine = msgs.length && msgs[msgs.length - 1].from === me.id;
   feed.textContent = '';
-  tally = tallyVotes();
   if (!msgs.length) feed.append(el('p', 'hint center', 'Aucun message pour le moment. Écris le premier.'));
   let lastDay = '', lastFrom = null;
   msgs.forEach(m => {
-    if (m.vote) return;
     const day = new Date(m.ts).toDateString();
     if (day !== lastDay) { feed.append(el('div', 'day', fmtDay(m.ts))); lastDay = day; lastFrom = null; }
     if (m.kind === 'sys') { feed.append(el('div', 'sys', m.text || '')); lastFrom = null; return; }
@@ -594,16 +599,13 @@ function renderFeed(){
     const row = el('div', 'row ' + (mine ? 'mine' : 'theirs'));
     if (cur.group && !mine && lastFrom !== m.from) row.append(el('div', 'who', nameOf(m.from)));
     const bub = el('div', 'bubble');
-    if (m.kind === 'call') bub.append(callEl(m));
-    else if (m.poll && Array.isArray(m.poll.opts)) { bub.classList.add('wide'); bub.append(pollEl(m)); }
-    else if (m.event && m.event.t) bub.append(eventEl(m));
-    else if (typeof m.img === 'string' && m.img.indexOf('data:image/jpeg;base64,') === 0) { bub.classList.add('photo'); bub.append(photoEl(m)); }
-    else bub.append(document.createTextNode(m.text || ''));
+    bub.append(bodyEl(m));
     bub.append(el('span', 'time', fmtTime(m.ts)));
     row.append(bub); feed.append(row);
     lastFrom = m.from;
   });
   if (stick || near || lastMine) { feed.scrollTop = feed.scrollHeight; stick = false; }
+  else feed.scrollTop = prevTop;
 }
 
 /* ---------- envoi de texte ---------- */
@@ -630,112 +632,6 @@ async function maybePrune(chatId){
       await col.doc(d.id).delete();
     }
   } catch (e) {}
-}
-
-/* ---------- menu « + » : sondage, photo, événement ----------
-   Les règles Firestore n'autorisent que les messages de type text / call / sys.
-   Sondage, photo et événement sont donc des messages « text » avec un champ en plus,
-   et un vote est un petit message « sys » masqué dans le fil. */
-let tally = {};
-function tallyVotes(){
-  const t = {};
-  msgs.forEach(m => { if (m.vote && m.vote.p) { (t[m.vote.p] = t[m.vote.p] || new Map()).set(m.from, m.vote.o); } });
-  return t;
-}
-function plusMenu(open){ $('#plus-menu').hidden = !open; $('#btn-plus').setAttribute('aria-expanded', open ? 'true' : 'false'); }
-async function postMsg(extra){
-  if (!cur || !canWrite) return false;
-  const chat = cur;
-  try {
-    await db.collection(msgPath(chat.id)).add(Object.assign({from: me.id, ts: Date.now(), kind: 'text', text: ''}, extra));
-    stick = true; maybePrune(chat.id); return true;
-  } catch (e) { toast("Le message n'a pas pu être envoyé (" + (e.code || 'erreur') + ')'); return false; }
-}
-function pollEl(m){
-  const box = el('div', 'poll'); box.append(el('div', 'pq', m.poll.q || ''));
-  const v = tally[m.id] || new Map(), total = v.size, mine = v.get(me.id);
-  m.poll.opts.forEach((o, k) => {
-    const n = [...v.values()].filter(x => x === k).length;
-    const b = el('button', 'popt' + (mine === k ? ' on' : '')); b.type = 'button';
-    const bar = el('span', 'pbar'); bar.style.width = (total ? Math.round(100 * n / total) : 0) + '%';
-    b.append(bar, el('span', 'pl', String(o)), el('span', 'pn', String(n)));
-    b.disabled = !canWrite; b.onclick = () => vote(m.id, k);
-    box.append(b);
-  });
-  box.append(el('div', 'pmeta', total + (total > 1 ? ' votes' : ' vote') + (mine == null ? ' · touche une réponse pour voter' : '')));
-  return box;
-}
-async function vote(id, k){
-  const mine = (tally[id] || new Map()).get(me.id);
-  if (mine === k) return;
-  await postMsg({kind: 'sys', text: nameOf(me.id) + ' a voté dans un sondage', vote: {p: id, o: k}});
-}
-function eventEl(m){
-  const e = m.event, box = el('div', 'evc');
-  const t = el('div', 'evt'); t.innerHTML = ic('cal', '', 16); t.append(document.createTextNode(e.t)); box.append(t);
-  const d = [];
-  if (e.d) { const dt = new Date(e.d + 'T' + (e.h || '12:00')); if (!isNaN(dt)) d.push(dt.toLocaleDateString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long'})); }
-  if (e.h) d.push('à ' + e.h);
-  if (d.length) box.append(el('div', 'evw', d.join(' ')));
-  if (e.p) box.append(el('div', 'evp', 'Lieu : ' + e.p));
-  return box;
-}
-function photoEl(m){
-  const i = el('img', 'pimg'); i.alt = 'Photo envoyée'; i.src = m.img;
-  i.onclick = () => i.classList.toggle('big');
-  return i;
-}
-function addOpt(){
-  const box = $('#pn-opts'); if (box.children.length >= 6) return;
-  const i = el('input', 'lb-url pn-o'); i.maxLength = 60; i.autocomplete = 'off';
-  i.placeholder = 'Réponse ' + (box.children.length + 1); i.setAttribute('aria-label', i.placeholder); i.style.marginBottom = '6px';
-  box.append(i);
-}
-function openPoll(){
-  if (!cur || !canWrite) return;
-  $('#pn-q').value = ''; $('#pn-opts').textContent = ''; addOpt(); addOpt();
-  $('#pn-err').textContent = ''; $('#pollnew').hidden = false; $('#pn-q').focus();
-}
-async function sendPoll(){
-  const q = $('#pn-q').value.trim();
-  const o = [...document.querySelectorAll('.pn-o')].map(i => i.value.trim()).filter(Boolean);
-  if (!q) { $('#pn-err').textContent = 'Écris la question.'; return; }
-  if (o.length < 2) { $('#pn-err').textContent = 'Ajoute au moins 2 réponses.'; return; }
-  $('#pollnew').hidden = true;
-  await postMsg({poll: {q: q.slice(0, 120), opts: o.slice(0, 6)}});
-}
-function openEvent(){
-  if (!cur || !canWrite) return;
-  ['#ev-t', '#ev-d', '#ev-h', '#ev-p'].forEach(s => { $(s).value = ''; });
-  $('#ev-err').textContent = ''; $('#evnew').hidden = false; $('#ev-t').focus();
-}
-async function sendEvent(){
-  const t = $('#ev-t').value.trim();
-  if (!t) { $('#ev-err').textContent = "Donne un nom à l'événement."; return; }
-  const e = {t: t.slice(0, 80)}, d = $('#ev-d').value, h = $('#ev-h').value, p = $('#ev-p').value.trim();
-  if (d) e.d = d; if (h) e.h = h; if (p) e.p = p.slice(0, 80);
-  $('#evnew').hidden = true;
-  await postMsg({event: e});
-}
-async function sendPhoto(){
-  const inp = $('#photo-in'), f = inp.files[0]; inp.value = '';
-  if (!f || !cur || !canWrite) return;
-  try {
-    const url = URL.createObjectURL(f);
-    const im = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = url; });
-    let max = 720, q = .62, out = '';
-    for (let n = 0; n < 3; n++) {
-      const k = Math.min(1, max / Math.max(im.width, im.height)), c = document.createElement('canvas');
-      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
-      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-      out = c.toDataURL('image/jpeg', q);
-      if (out.length < 400000) break;
-      max *= .75; q -= .1;
-    }
-    URL.revokeObjectURL(url);
-    if (out.length >= 800000) { toast('Cette photo est trop lourde.'); return; }
-    await postMsg({img: out});
-  } catch (e) { toast("La photo n'a pas pu être envoyée."); }
 }
 
 /* ---------- appels via Jitsi Meet (s'ouvrent dans un nouvel onglet) ---------- */
@@ -872,6 +768,267 @@ function callEl(m){
     box.append(a);
   }
   return box;
+}
+
+/* ---------- menu « + » : sondage, photo, appareil photo, document, position, événement, contact ---------- */
+const EVENT_OPTS = ['Je viens', 'Peut-être', 'Je ne viens pas'];
+const DOC_EXT = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'];
+const votes = new Map(), voteUnsubs = new Map(), pollNodes = new Map();
+function clearVotes(){ voteUnsubs.forEach(u => { try { u(); } catch (e) {} }); voteUnsubs.clear(); votes.clear(); pollNodes.clear(); }
+function optsOf(m){ return m.kind === 'event' ? EVENT_OPTS : (Array.isArray(m.options) ? m.options.map(String) : []); }
+function watchVotes(chatId, m){
+  if (voteUnsubs.has(m.id)) return;
+  const un = db.collection(msgPath(chatId) + '/' + m.id + '/votes').onSnapshot(snap => {
+    const mp = new Map();
+    snap.docs.forEach(d => { const c = (d.data() || {}).choices; if (Array.isArray(c)) mp.set(d.id, c.filter(n => Number.isInteger(n))); });
+    votes.set(m.id, mp);
+    const node = pollNodes.get(m.id), msg = msgs.find(x => x.id === m.id);
+    if (node && msg) fillPoll(node, msg);
+  }, () => {});
+  voteUnsubs.set(m.id, un);
+}
+function fillPoll(node, m){
+  const opts = optsOf(m), mp = votes.get(m.id) || new Map(), mine = mp.get(me.id) || [];
+  const counts = opts.map(() => 0), who = opts.map(() => []);
+  mp.forEach((choices, uid) => choices.forEach(i => { if (i >= 0 && i < opts.length) { counts[i]++; who[i].push(uid === me.id ? 'Toi' : nameOf(uid)); } }));
+  const voters = [...mp.values()].filter(c => c.length).length;
+  node.textContent = '';
+  opts.forEach((label, i) => {
+    const b = el('button', 'po'); b.type = 'button'; b.setAttribute('aria-pressed', String(mine.includes(i)));
+    const bar = el('span', 'po-bar'); bar.style.width = voters ? Math.round(counts[i] / voters * 100) + '%' : '0%';
+    b.append(bar, el('span', 'po-l', (mine.includes(i) ? '✓ ' : '') + label), el('span', 'po-n', String(counts[i])));
+    b.onclick = () => castVote(m, i);
+    node.append(b);
+    if (counts[i]) node.append(el('div', 'po-who', who[i].join(', ')));
+  });
+  node.append(el('div', 'po-foot', voters + (voters > 1 ? ' votes' : ' vote')));
+}
+async function castVote(m, i){
+  if (!canWrite || !cur) return;
+  const mp = votes.get(m.id) || new Map(); let ch = (mp.get(me.id) || []).slice();
+  if (m.kind === 'poll' && m.multi) ch = ch.includes(i) ? ch.filter(x => x !== i) : ch.concat([i]);
+  else ch = ch.includes(i) ? [] : [i];
+  const ref = db.doc(msgPath(cur.id) + '/' + m.id + '/votes/' + me.id);
+  try { if (ch.length) await ref.set({choices: ch, ts: Date.now()}); else await ref.delete(); }
+  catch (e) { toast('Le vote a échoué' + (e && e.code === 'permission-denied' ? " : mets à jour les règles de sécurité dans Firebase." : '.')); }
+}
+function pollEl(m){
+  const box = el('div', 'card');
+  box.append(el('div', 'card-k', 'Sondage'), el('div', 'card-t', m.question || ''), el('div', 'card-s', m.multi ? 'Plusieurs réponses possibles' : 'Une seule réponse'));
+  const list = el('div', 'po-list'); box.append(list); pollNodes.set(m.id, list); fillPoll(list, m); return box;
+}
+function eventEl(m){
+  const box = el('div', 'card');
+  box.append(el('div', 'card-k', 'Événement'), el('div', 'card-t', m.title || ''));
+  let when = String(m.when || ''); const d = new Date(when);
+  if (when && !isNaN(d)) when = d.toLocaleString('fr-FR', {weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'});
+  if (when) box.append(el('div', 'card-s', when));
+  if (m.place) box.append(el('div', 'card-s', String(m.place)));
+  const list = el('div', 'po-list'); box.append(list); pollNodes.set(m.id, list); fillPoll(list, m); return box;
+}
+function imageEl(m){
+  const img = el('img', 'msg-img'); img.alt = 'Photo envoyée';
+  if (typeof m.img === 'string' && m.img.startsWith('data:image/jpeg;base64,')) img.src = m.img;
+  if (Number(m.w) > 0 && Number(m.h) > 0) { img.width = Number(m.w); img.height = Number(m.h); }
+  img.onclick = () => { $('#lx-img').src = img.src; $('#lightbox').hidden = false; };
+  return img;
+}
+function locationEl(m){
+  const lat = Number(m.lat), lng = Number(m.lng), box = el('div', 'card');
+  box.append(el('div', 'card-k', 'Position'), el('div', 'card-t', 'Position partagée'));
+  if (isFinite(lat) && isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+    box.append(el('div', 'card-s', lat.toFixed(5) + ', ' + lng.toFixed(5)));
+    const a = el('a', 'card-a', 'Voir sur la carte'); a.href = 'https://www.google.com/maps?q=' + lat + ',' + lng; a.target = '_blank'; a.rel = 'noopener noreferrer'; box.append(a);
+  }
+  return box;
+}
+function contactEl(m){
+  const box = el('div', 'card');
+  box.append(el('div', 'card-k', 'Contact'), el('div', 'card-t', String(m.cname || '')), el('div', 'card-s', String(m.phone || '')));
+  const num = String(m.phone || '').replace(/[^\d+]/g, '');
+  if (num) { const a = el('a', 'card-a', 'Appeler'); a.href = 'tel:' + num; box.append(a); }
+  return box;
+}
+function fileEl(m){
+  const box = el('div', 'card'), name = String(m.fname || 'document');
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  box.append(el('div', 'card-k', 'Document'), el('div', 'card-t', name), el('div', 'card-s', Math.max(1, Math.round(Number(m.fsize || 0) / 1024)) + ' Ko'));
+  if (DOC_EXT.includes(ext) && typeof m.data === 'string') {
+    const b = el('button', 'card-a', 'Télécharger'); b.type = 'button';
+    b.onclick = () => {
+      try {
+        const bin = atob(m.data), bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([bytes], {type: 'application/octet-stream'}));
+        const a = document.createElement('a'); a.href = url; a.download = name.replace(/[\\/:*?"<>|]+/g, '_');
+        document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+      } catch (e) { toast("Le document n'a pas pu être ouvert."); }
+    };
+    box.append(b);
+  } else box.append(el('div', 'card-s', 'Type de fichier non pris en charge.'));
+  return box;
+}
+function bodyEl(m){
+  switch (m.kind) {
+    case 'call': return callEl(m);
+    case 'poll': return pollEl(m);
+    case 'event': return eventEl(m);
+    case 'image': return imageEl(m);
+    case 'location': return locationEl(m);
+    case 'contact': return contactEl(m);
+    case 'file': return fileEl(m);
+    default: return document.createTextNode(m.text || '');
+  }
+}
+
+async function postMsg(extra){
+  if (!cur || !canWrite) return false;
+  const chat = cur;
+  try {
+    await db.collection(msgPath(chat.id)).add(Object.assign({from: me.id, ts: Date.now()}, extra));
+    stick = true; maybePrune(chat.id); return true;
+  } catch (e) {
+    toast("L'envoi a échoué" + (e && e.code === 'permission-denied' ? " : mets à jour les règles de sécurité dans Firebase." : '.'));
+    return false;
+  }
+}
+function readFile(file, as){
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); as === 'buf' ? r.readAsArrayBuffer(file) : r.readAsDataURL(file); });
+}
+function loadImage(file){
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); };
+    im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('img')); };
+    im.src = u;
+  });
+}
+async function compressImage(file){
+  const im = await loadImage(file); let max = 900;
+  for (let round = 0; round < 4; round++) {
+    const sc = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+    const w = Math.max(1, Math.round(im.naturalWidth * sc)), h = Math.max(1, Math.round(im.naturalHeight * sc));
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(im, 0, 0, w, h);
+    for (const q of [0.72, 0.6, 0.48]) { const d = c.toDataURL('image/jpeg', q); if (d.length <= 330000) return {img: d, w, h}; }
+    max = Math.round(max * 0.75);
+  }
+  return null;
+}
+async function sendPhoto(file){
+  if (!file) return;
+  if (!/^image\//.test(file.type)) { toast("Ce fichier n'est pas une image."); return; }
+  toast('Préparation de la photo…');
+  let r = null; try { r = await compressImage(file); } catch (e) {}
+  if (!r) { toast("Cette photo n'a pas pu être préparée."); return; }
+  if (await postMsg({kind: 'image', img: r.img, w: r.w, h: r.h})) toast('Photo envoyée.');
+}
+async function sendDoc(file){
+  if (!file) return;
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (!DOC_EXT.includes(ext)) { toast('Types acceptés : PDF, Word, Excel, PowerPoint, TXT, CSV.'); return; }
+  if (file.size > 600 * 1024) { toast('Document trop lourd : 600 Ko maximum.'); return; }
+  let b64 = '';
+  try { const buf = new Uint8Array(await readFile(file, 'buf')); let bin = ''; for (let i = 0; i < buf.length; i += 8192) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 8192)); b64 = btoa(bin); }
+  catch (e) { toast("Le document n'a pas pu être lu."); return; }
+  if (await postMsg({kind: 'file', fname: file.name.slice(-80), fsize: file.size, mime: file.type || 'application/octet-stream', data: b64})) toast('Document envoyé.');
+}
+function sendLocation(){
+  if (!navigator.geolocation) { toast("La localisation n'est pas disponible sur cet appareil."); return; }
+  if (!confirm('Envoyer ta position actuelle dans cette conversation ?')) return;
+  toast('Recherche de ta position…');
+  navigator.geolocation.getCurrentPosition(
+    p => { postMsg({kind: 'location', lat: Math.round(p.coords.latitude * 1e5) / 1e5, lng: Math.round(p.coords.longitude * 1e5) / 1e5}); },
+    err => toast(err && err.code === 1 ? 'Autorise la localisation pour ce site dans ton navigateur, puis réessaie.' : "Ta position n'est pas disponible pour le moment."),
+    {enableHighAccuracy: true, timeout: 12000, maximumAge: 60000});
+}
+
+/* petites fenêtres de saisie */
+let mkSubmit = null;
+function mkField(body, text, props){
+  const l = el('label', 'lbl', text), i = el('input', 'lb-url'); Object.assign(i, props || {});
+  i.style.marginBottom = '6px'; i.id = 'mkf-' + Math.random().toString(36).slice(2, 8); l.htmlFor = i.id; body.append(l, i); return i;
+}
+function openMk(title, okLabel, build, submit){
+  $('#mk-t').textContent = title; $('#mk-ok').textContent = okLabel; $('#mk-err').textContent = '';
+  const body = $('#mk-body'); body.textContent = ''; const ctx = build(body);
+  mkSubmit = async () => {
+    $('#mk-err').textContent = '';
+    try { const err = await submit(ctx); if (err) $('#mk-err').textContent = err; else $('#mk').hidden = true; }
+    catch (e) { $('#mk-err').textContent = 'Une erreur est survenue. Réessaie.'; }
+  };
+  $('#mk').hidden = false; const f = body.querySelector('input'); if (f) f.focus();
+}
+function openPollForm(){
+  openMk('Nouveau sondage', 'Envoyer', body => {
+    const q = mkField(body, 'Question', {maxLength: 200, placeholder: 'Pose ta question'});
+    body.append(el('div', 'lbl', 'Options'));
+    const list = el('div'), inputs = []; body.append(list);
+    const add = el('button', 'pill small', 'Ajouter une option'); add.type = 'button';
+    const addOpt = () => {
+      if (inputs.length >= 8) return;
+      const i = el('input', 'lb-url'); i.maxLength = 80; i.placeholder = 'Option ' + (inputs.length + 1); i.style.marginBottom = '6px'; i.setAttribute('aria-label', 'Option ' + (inputs.length + 1));
+      inputs.push(i); list.append(i); add.hidden = inputs.length >= 8;
+    };
+    add.onclick = () => { addOpt(); inputs[inputs.length - 1].focus(); };
+    addOpt(); addOpt(); body.append(add);
+    const row = el('label', 'chk'), multi = el('input'); multi.type = 'checkbox';
+    row.append(multi, document.createTextNode('Autoriser plusieurs réponses')); body.append(row);
+    return {q, inputs, multi};
+  }, async ctx => {
+    const question = ctx.q.value.trim();
+    const options = [...new Set(ctx.inputs.map(i => i.value.trim()).filter(Boolean))];
+    if (!question) return 'Écris la question du sondage.';
+    if (options.length < 2) return 'Ajoute au moins deux options différentes.';
+    return (await postMsg({kind: 'poll', question, options, multi: ctx.multi.checked})) ? null : "L'envoi a échoué.";
+  });
+}
+function openEventForm(){
+  openMk('Nouvel événement', 'Envoyer', body => ({
+    title: mkField(body, 'Nom de l\u2019événement', {maxLength: 100, placeholder: 'Ex. : Anniversaire de Léa'}),
+    when: mkField(body, 'Date et heure', {type: 'datetime-local'}),
+    place: mkField(body, 'Lieu (facultatif)', {maxLength: 100})
+  }), async ctx => {
+    const title = ctx.title.value.trim(), when = ctx.when.value;
+    if (!title) return 'Donne un nom à l\u2019événement.';
+    if (!when) return 'Choisis la date et l\u2019heure.';
+    return (await postMsg({kind: 'event', title, when, place: ctx.place.value.trim()})) ? null : "L'envoi a échoué.";
+  });
+}
+function openContactForm(){
+  openMk('Partager un contact', 'Envoyer', body => ({
+    name: mkField(body, 'Nom', {maxLength: 60}),
+    phone: mkField(body, 'Numéro de téléphone', {type: 'tel', maxLength: 20, placeholder: '+212 6 00 00 00 00'})
+  }), async ctx => {
+    const cname = ctx.name.value.trim(), phone = ctx.phone.value.trim();
+    if (!cname) return 'Écris le nom du contact.';
+    if (!/^[0-9+\-().\s]{3,20}$/.test(phone)) return 'Le numéro doit contenir 3 à 20 chiffres ou symboles (+ - ( ) .).';
+    return (await postMsg({kind: 'contact', cname, phone})) ? null : "L'envoi a échoué.";
+  });
+}
+
+/* le bouton « + » et son menu */
+function closePlus(){ const m = $('#plus-menu'), b = $('#btn-plus'); if (m) m.hidden = true; if (b) b.setAttribute('aria-expanded', 'false'); }
+function initPlus(){
+  const btn = $('#btn-plus'), menu = $('#plus-menu');
+  btn.innerHTML = ic('plus', '', 22);
+  [['image', 'Photo', () => $('#f-photo').click()], ['camera', 'Appareil photo', () => $('#f-cam').click()], ['file', 'Document', () => $('#f-doc').click()],
+   ['pin', 'Position', sendLocation], ['poll', 'Sondage', openPollForm], ['calendar', 'Événement', openEventForm], ['contact', 'Contact', openContactForm]]
+  .forEach(it => {
+    const b = el('button'); b.type = 'button'; b.setAttribute('role', 'menuitem');
+    b.innerHTML = ic(it[0], '', 20) + '<span></span>'; b.lastChild.textContent = it[1];
+    b.onclick = () => { closePlus(); it[2](); }; menu.append(b);
+  });
+  btn.onclick = () => { if (menu.hidden) { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); } else closePlus(); };
+  document.addEventListener('click', e => { if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) closePlus(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlus(); });
+  $('#f-photo').onchange = e => { sendPhoto(e.target.files[0]); e.target.value = ''; };
+  $('#f-cam').onchange = e => { sendPhoto(e.target.files[0]); e.target.value = ''; };
+  $('#f-doc').onchange = e => { sendDoc(e.target.files[0]); e.target.value = ''; };
+  $('#mk-ok').onclick = () => { if (mkSubmit) mkSubmit(); };
+  $('#mk-cancel').onclick = () => { $('#mk').hidden = true; };
+  $('#mk-body').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') { e.preventDefault(); if (mkSubmit) mkSubmit(); } });
+  $('#lightbox').onclick = () => { $('#lightbox').hidden = true; };
 }
 
 /* ---------- groupes ---------- */
@@ -1253,17 +1410,7 @@ async function boot(){
   $('#ta').addEventListener('input', () => { autosize(); toggleSendBtn(); });
   $('#ta').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendText(); } });
   $('#btn-send').onclick = sendText;
-  document.querySelectorAll('#plus-menu .pi').forEach(s => { s.innerHTML = ic(s.dataset.i, '', 20); });
-  $('#btn-plus').innerHTML = ic('plus');
-  $('#btn-plus').onclick = e => { e.stopPropagation(); plusMenu($('#plus-menu').hidden); };
-  document.addEventListener('click', e => { if (!e.target.closest('#plus-menu')) plusMenu(false); });
-  $('#plus-menu').addEventListener('click', e => {
-    const b = e.target.closest('button[data-act]'); if (!b) return; plusMenu(false);
-    if (b.dataset.act === 'poll') openPoll(); else if (b.dataset.act === 'event') openEvent(); else $('#photo-in').click();
-  });
-  $('#photo-in').onchange = sendPhoto;
-  $('#pn-add').onclick = addOpt; $('#pn-cancel').onclick = () => { $('#pollnew').hidden = true; }; $('#pn-send').onclick = sendPoll;
-  $('#ev-cancel').onclick = () => { $('#evnew').hidden = true; }; $('#ev-send').onclick = sendEvent;
+  initPlus();
   $('#call-audio-btn').onclick = () => startCall(false);
   $('#call-video-btn').onclick = () => startCall(true);
   $('#inc-yes').onclick = acceptIncoming; $('#inc-no').onclick = declineIncoming;
@@ -1276,6 +1423,7 @@ async function boot(){
   $('#gi-leave').onclick = leaveGroup;
   $('#gi-add-btn').onclick = addMembers;
   $('#gi-rename-btn').onclick = renameGroup;
+document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('grid'); });
   $('#admin-btn').innerHTML = ic('shield');
   $('#admin-btn').onclick = openAdmin;
   $('#adm-close').onclick = closeAdmin;
@@ -1284,7 +1432,7 @@ async function boot(){
   $('#st-close').onclick = closeSettings;
   $('#vol').oninput = e => { settings.vol = Number(e.target.value) / 100; saveSettings(); };
   $('#vol').onchange = () => { unlockAudio(); playCycle(settings.tone); };
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else ['#gnew', '#ginfo', '#linkbox', '#pollnew', '#evnew'].forEach(x => { $(x).hidden = true; }); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else ['#gnew', '#ginfo', '#linkbox', '#mk', '#lightbox'].forEach(x => { $(x).hidden = true; }); } });
   $('#lb-close').onclick = () => { $('#linkbox').hidden = true; };
   $('#lb-copy').onclick = () => { const i = $('#lb-url'); i.select(); try { navigator.clipboard.writeText(i.value).then(() => toast('Lien copié.'), () => toast('Sélectionne le lien et copie-le.')); } catch (e) { toast('Sélectionne le lien et copie-le.'); } };
   $('#tab-login').onclick = () => setMode('login');
