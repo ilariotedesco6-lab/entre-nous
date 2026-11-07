@@ -202,6 +202,13 @@ label.lbl{display:block}
 .msg-img{display:block;max-width:min(260px,70vw);width:auto;height:auto;max-height:320px;border-radius:12px;cursor:zoom-in}
 #lightbox{cursor:zoom-out;z-index:70}
 #lx-img{max-width:94vw;max-height:90dvh;border-radius:12px;object-fit:contain}
+.w-news{grid-column:1/-1;background:var(--surface);border:1px solid var(--accent);border-radius:20px;padding:16px 20px}
+.w-news-h,.news-h{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#w-news-t{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:4px}
+.news{margin:0 18px 12px;padding:10px 12px;border:1px solid var(--accent);border-radius:14px;background:var(--surface)}
+.news-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.news-t{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:130px;overflow:auto;margin-top:4px}
+.news-d{font-size:12px;color:var(--muted);margin-top:4px}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(440px,92vw);opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.show{opacity:1}
 
@@ -230,6 +237,11 @@ label.lbl{display:block}
     <div class="apps-row">
       <a class="applink" href="https://claude.ai/public/artifacts/73d757a8-c90f-495e-bdc4-da0902c59bc0" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Répertoire</span></a>
       <a class="applink" href="https://ilariotedesco6-lab.github.io/ilaplant/" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Ilaplant</span></a>
+    </div>
+    <div id="news" class="news" hidden role="region" aria-label="Annonce">
+      <div class="news-h"><span>Annonce</span><button id="news-edit" class="pill small" type="button" hidden>Modifier</button></div>
+      <div id="news-t" class="news-t"></div>
+      <div id="news-d" class="news-d"></div>
     </div>
     <ul id="chats"></ul>
     <p id="side-hint" class="hint" hidden></p>
@@ -267,6 +279,7 @@ label.lbl{display:block}
 
 <section id="welcome" class="welcome">
  <div class="w-layout">
+  <div id="w-news" class="w-news" hidden role="region" aria-label="Annonce"><div class="w-news-h">Annonce</div><div id="w-news-t"></div></div>
   <div class="w-card">
     <h1>Entre nous</h1>
     <p class="w-tag">La messagerie de ta bande : messages, groupes et appels.</p>
@@ -962,7 +975,7 @@ function openMk(title, okLabel, build, submit){
     try { const err = await submit(ctx); if (err) $('#mk-err').textContent = err; else $('#mk').hidden = true; }
     catch (e) { $('#mk-err').textContent = 'Une erreur est survenue. Réessaie.'; }
   };
-  $('#mk').hidden = false; const f = body.querySelector('input'); if (f) f.focus();
+  $('#mk').hidden = false; const f = body.querySelector('input,textarea'); if (f) f.focus();
 }
 function openPollForm(){
   openMk('Nouveau sondage', 'Envoyer', body => {
@@ -1326,6 +1339,39 @@ function makeCopy(center, sfx){
   return c;
 }
 
+/* ---------- annonce (lisible par tous, modifiable par l'administrateur) ---------- */
+let announcement = {text: '', ts: 0};
+function renderNews(){
+  const t = announcement.text || '';
+  $('#w-news').hidden = !t; $('#w-news-t').textContent = t;
+  $('#news').hidden = !(t || isAdmin);
+  $('#news-t').textContent = t || 'Aucune annonce pour le moment.';
+  $('#news-edit').hidden = !isAdmin;
+  $('#news-d').textContent = (t && announcement.ts) ? 'Publiée le ' + new Date(announcement.ts).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long'}) : '';
+}
+function watchNews(){
+  try {
+    FS.onSnapshot(FS.doc(fsdb, 'site/announcement'), snap => {
+      const d = snap.exists() ? snap.data() : null;
+      announcement = d && typeof d.text === 'string' ? {text: d.text.slice(0, 600), ts: Number(d.ts) || 0} : {text: '', ts: 0};
+      renderNews();
+    }, () => {});
+  } catch (e) {}
+}
+function openNewsForm(){
+  if (!isAdmin) return;
+  openMk('Annonce', 'Publier', body => {
+    body.append(el('label', 'lbl', 'Texte de l’annonce (laisse vide pour l’effacer)'));
+    const ta = el('textarea', 'lb-url'); ta.maxLength = 600; ta.rows = 5; ta.value = announcement.text || '';
+    ta.style.resize = 'vertical'; ta.style.fontFamily = 'inherit'; ta.style.fontSize = '15px'; ta.setAttribute('aria-label', 'Texte de l’annonce');
+    body.append(ta); return {ta};
+  }, async ctx => {
+    const text = ctx.ta.value.trim().slice(0, 600);
+    try { await db.doc('site/announcement').set({text, ts: Date.now(), by: me.id}); return null; }
+    catch (e) { return e && e.code === 'permission-denied' ? 'Refusé : mets à jour les règles de sécurité dans Firebase.' : 'La publication a échoué. Réessaie.'; }
+  });
+}
+
 /* ---------- administration ---------- */
 async function checkAdmin(){
   try { const d = await db.doc('admins/' + me.id).get(); return d.exists; }
@@ -1393,6 +1439,7 @@ async function enterApp(acct){
   watchSelfRemoval();
   isAdmin = await checkAdmin();
   $('#admin-btn').hidden = !isAdmin;
+  renderNews();
 
   ensurePreview('salon');
   let accSig = '';
@@ -1445,6 +1492,7 @@ async function boot(){
   $('#gi-add-btn').onclick = addMembers;
   $('#gi-rename-btn').onclick = renameGroup;
 document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('grid'); });
+  $('#news-edit').onclick = openNewsForm;
   $('#admin-btn').innerHTML = ic('shield');
   $('#admin-btn').onclick = openAdmin;
   $('#adm-close').onclick = closeAdmin;
@@ -1474,6 +1522,7 @@ document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('
     auth = FA.getAuth(app); fsdb = FS.getFirestore(app);
   } catch (e) { welcomeBlock('La configuration Firebase est invalide. Vérifie le fichier firebase-config.js.'); return; }
   db = makeDb();
+  watchNews();
 
   FA.onAuthStateChanged(auth, async user => {
     if (busyAuth || entered) return;
