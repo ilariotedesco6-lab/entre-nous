@@ -48,16 +48,10 @@ svg{display:block}
 .meid{display:flex;align-items:center;gap:8px;min-width:0}
 .me .icon-btn{width:36px;height:36px}
 .welcome{position:fixed;inset:0;z-index:60;background:var(--bg);display:grid;place-items:center;padding:16px;overflow:auto}
-.w-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,400px) minmax(0,1fr);gap:18px;width:min(1100px,100%);align-items:start}
+.w-layout{display:grid;grid-template-columns:repeat(3,minmax(0,400px));justify-content:center;gap:18px;width:min(1260px,100%);align-items:start}
 .w-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px 26px;width:100%}
-.w-side{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:22px 20px}
-.w-side h2{font:700 20px var(--font-display);margin:0 0 12px}
-.w-side ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
-.w-side li{display:flex;gap:12px;align-items:flex-start}
-.w-side li .ic{color:var(--mine);flex:none;margin-top:2px}
-.w-side .applink{flex:none;margin-bottom:8px}
-.w-side p{margin:12px 0 0;font-size:14px;color:var(--muted)}
-@media (max-width:959px){.w-layout{grid-template-columns:1fr;width:min(440px,100%);margin:0 auto}.w-card{order:-1}}
+.w-title{font:700 32px/1.1 var(--font-display);margin:0 0 6px;letter-spacing:-.01em}
+@media (max-width:959px){.w-layout{grid-template-columns:1fr;width:min(440px,100%);margin:0 auto}.w-copy{display:none}}
 .w-card h1{font:700 32px/1.1 var(--font-display);margin:0 0 6px;letter-spacing:-.01em}
 .w-tag{margin:0 0 20px;color:var(--muted)}
 .w-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:14px;padding:4px;margin-bottom:18px}
@@ -273,15 +267,6 @@ label.lbl{display:block}
 
 <section id="welcome" class="welcome">
  <div class="w-layout">
-  <aside class="w-side" aria-label="Ce que tu peux faire">
-    <h2>Ce que tu peux faire</h2>
-    <ul>
-      <li><span class="ic-wrap" data-i="users"></span><span>Écrire en privé ou dans des groupes</span></li>
-      <li><span class="ic-wrap" data-i="poll"></span><span>Envoyer des sondages, photos, documents, positions et événements</span></li>
-      <li><span class="ic-wrap" data-i="video"></span><span>Passer des appels vocaux et vidéo</span></li>
-      <li><span class="ic-wrap" data-i="bell"></span><span>Choisir ta sonnerie</span></li>
-    </ul>
-  </aside>
   <div class="w-card">
     <h1>Entre nous</h1>
     <p class="w-tag">La messagerie de ta bande : messages, groupes et appels.</p>
@@ -305,12 +290,6 @@ label.lbl{display:block}
     <button id="w-submit" class="w-submit">Se connecter</button>
     <p id="w-note" class="w-note">Connexion à la messagerie…</p>
   </div>
-  <aside class="w-side" aria-label="Mes applications">
-    <h2>Mes applications</h2>
-    <a class="applink" href="https://claude.ai/public/artifacts/73d757a8-c90f-495e-bdc4-da0902c59bc0" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Répertoire</span></a>
-    <a class="applink" href="https://ilariotedesco6-lab.github.io/ilaplant/" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Ilaplant</span></a>
-    <p>Accès directs, dans un nouvel onglet.</p>
-  </aside>
  </div>
 </section>
 
@@ -1298,39 +1277,53 @@ async function login(rawName, code){
   return {id: cred.user.uid, name: s0.data().name};
 }
 
-let wMode = 'login';
-function setMode(m){
-  wMode = m;
-  $('#tab-login').setAttribute('aria-selected', String(m === 'login'));
-  $('#tab-create').setAttribute('aria-selected', String(m === 'create'));
-  $('#w-code2-row').hidden = m !== 'create';
-  $('#w-inv-row').hidden = m !== 'create';
-  $('#w-code').autocomplete = m === 'create' ? 'new-password' : 'current-password';
-  $('#w-submit').textContent = m === 'create' ? 'Créer mon compte' : 'Se connecter';
-  $('#w-err').textContent = '';
-  $('#w-note').textContent = m === 'create'
+const SFX = ['', '-l', '-r'];   /* centre, copie de gauche, copie de droite */
+const g = (id, sfx) => $('#' + id + (sfx || ''));
+const wModes = {};
+function setMode(m, sfx){
+  sfx = sfx || ''; wModes[sfx] = m;
+  g('tab-login', sfx).setAttribute('aria-selected', String(m === 'login'));
+  g('tab-create', sfx).setAttribute('aria-selected', String(m === 'create'));
+  g('w-code2-row', sfx).hidden = m !== 'create';
+  g('w-inv-row', sfx).hidden = m !== 'create';
+  g('w-code', sfx).autocomplete = m === 'create' ? 'new-password' : 'current-password';
+  g('w-submit', sfx).textContent = m === 'create' ? 'Créer mon compte' : 'Se connecter';
+  g('w-err', sfx).textContent = '';
+  g('w-note', sfx).textContent = m === 'create'
     ? "Le code d'invitation t'est donné par la personne qui a créé l'appli. Ton code personnel fait 6 caractères au minimum ; n'utilise pas un mot de passe que tu utilises ailleurs."
     : '';
 }
 let ready = false, blockedMsg = 'Connexion à la messagerie en cours, patiente quelques secondes…';
-function welcomeBlock(msg){ blockedMsg = msg; $('#w-note').textContent = msg; }
+function welcomeBlock(msg){ blockedMsg = msg; SFX.forEach(x => { g('w-note', x).textContent = msg; }); }
 let busyAuth = false, entered = false;
-async function submitWelcome(){
-  if ($('#w-submit').disabled) return;
-  if (!ready) { $('#w-err').textContent = blockedMsg; return; }
-  const name = $('#w-name').value, code = $('#w-code').value;
-  $('#w-err').textContent = ''; $('#w-submit').disabled = true; busyAuth = true;
+async function submitWelcome(sfx){
+  sfx = sfx || '';
+  const mode = wModes[sfx] || 'login';
+  if (g('w-submit', sfx).disabled) return;
+  if (!ready) { g('w-err', sfx).textContent = blockedMsg; return; }
+  const name = g('w-name', sfx).value, code = g('w-code', sfx).value;
+  g('w-err', sfx).textContent = ''; g('w-submit', sfx).disabled = true; busyAuth = true;
   try {
-    if (wMode === 'create' && code !== $('#w-code2').value) throw userError('Les deux codes ne sont pas identiques.');
-    const acct = wMode === 'create' ? await createAccount(name, code, $('#w-inv').value) : await login(name, code);
+    if (mode === 'create' && code !== g('w-code2', sfx).value) throw userError('Les deux codes ne sont pas identiques.');
+    const acct = mode === 'create' ? await createAccount(name, code, g('w-inv', sfx).value) : await login(name, code);
     await enterApp(acct);
   } catch (e) {
-    $('#w-err').textContent = e && e.user ? e.message
+    g('w-err', sfx).textContent = e && e.user ? e.message
       : (e && e.code === 'permission-denied' ? "Accès refusé : les règles de sécurité Firestore ne sont sans doute pas encore publiées (voir le guide)."
       : 'Une erreur est survenue' + (e && e.code ? ' (' + e.code + ')' : '') + '. Réessaie.');
-    $('#w-submit').disabled = false;
+    g('w-submit', sfx).disabled = false;
   }
   busyAuth = false;
+}
+/* Copie conforme du panneau du centre, avec des identifiants à elle pour que rien ne se mélange. */
+function makeCopy(center, sfx){
+  const c = center.cloneNode(true);
+  c.classList.add('w-copy');
+  c.querySelectorAll('[id]').forEach(n => { n.id += sfx; });
+  c.querySelectorAll('label[for]').forEach(n => n.setAttribute('for', n.getAttribute('for') + sfx));
+  const h = c.querySelector('h1');
+  if (h) { const t = document.createElement('div'); t.className = 'w-title'; t.textContent = h.textContent; h.replaceWith(t); }
+  return c;
 }
 
 /* ---------- administration ---------- */
@@ -1428,6 +1421,8 @@ async function enterApp(acct){
 /* ---------- démarrage ---------- */
 async function boot(){
   window.__enBooted = true;
+  const layout = $('.w-layout'), center = layout.querySelector('.w-card');
+  layout.insertBefore(makeCopy(center, '-l'), center); layout.append(makeCopy(center, '-r'));
   $('#back').innerHTML = ic('back'); $('#btn-send').innerHTML = ic('send'); $('#logout').innerHTML = ic('logout');
   $('#call-audio-btn').innerHTML = ic('phone'); $('#call-video-btn').innerHTML = ic('video');
   $('#inc-no').innerHTML = hangup(28);
@@ -1450,7 +1445,6 @@ async function boot(){
   $('#gi-add-btn').onclick = addMembers;
   $('#gi-rename-btn').onclick = renameGroup;
 document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('grid'); });
-  document.querySelectorAll('.ic-wrap[data-i]').forEach(w => { w.innerHTML = ic(w.dataset.i); });
   $('#admin-btn').innerHTML = ic('shield');
   $('#admin-btn').onclick = openAdmin;
   $('#adm-close').onclick = closeAdmin;
@@ -1462,10 +1456,12 @@ document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else ['#gnew', '#ginfo', '#linkbox', '#mk', '#lightbox'].forEach(x => { $(x).hidden = true; }); } });
   $('#lb-close').onclick = () => { $('#linkbox').hidden = true; };
   $('#lb-copy').onclick = () => { const i = $('#lb-url'); i.select(); try { navigator.clipboard.writeText(i.value).then(() => toast('Lien copié.'), () => toast('Sélectionne le lien et copie-le.')); } catch (e) { toast('Sélectionne le lien et copie-le.'); } };
-  $('#tab-login').onclick = () => setMode('login');
-  $('#tab-create').onclick = () => setMode('create');
-  $('#w-submit').onclick = submitWelcome;
-  ['#w-name', '#w-code', '#w-code2', '#w-inv'].forEach(x => $(x).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitWelcome(); } }));
+  SFX.forEach(x => {
+    g('tab-login', x).onclick = () => setMode('login', x);
+    g('tab-create', x).onclick = () => setMode('create', x);
+    g('w-submit', x).onclick = () => submitWelcome(x);
+    ['w-name', 'w-code', 'w-code2', 'w-inv'].forEach(id => g(id, x).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitWelcome(x); } }));
+  });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && cur) { markRead(cur.id); renderList(); } });
   welcomeBlock('Connexion à la messagerie…');
 
@@ -1488,7 +1484,7 @@ document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('
       } catch (e) {}
       try { await FA.signOut(auth); } catch (e) {}
     }
-    ready = true; welcomeBlock(''); setMode('login'); $('#w-name').focus();
+    ready = true; welcomeBlock(''); SFX.forEach(x => setMode('login', x)); $('#w-name').focus();
   });
 }
 boot();
