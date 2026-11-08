@@ -51,7 +51,8 @@ svg{display:block}
 .w-layout{display:grid;grid-template-columns:repeat(3,minmax(0,400px));justify-content:center;gap:18px;width:min(1260px,100%);align-items:start}
 .w-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px 26px;width:100%}
 .w-title{font:700 32px/1.1 var(--font-display);margin:0 0 6px;letter-spacing:-.01em}
-@media (max-width:959px){.w-layout{grid-template-columns:1fr;width:min(440px,100%);margin:0 auto}.w-copy{display:none}}
+.w-sub{font:700 22px/1.2 var(--font-display);margin:0 0 14px}
+@media (max-width:959px){.w-layout{grid-template-columns:1fr;width:min(440px,100%);margin:0 auto}.w-news{order:-2}.w-card:not(.w-copy){order:-1}}
 .w-card h1{font:700 32px/1.1 var(--font-display);margin:0 0 6px;letter-spacing:-.01em}
 .w-tag{margin:0 0 20px;color:var(--muted)}
 .w-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:14px;padding:4px;margin-bottom:18px}
@@ -283,10 +284,7 @@ label.lbl{display:block}
   <div class="w-card">
     <h1>Entre nous</h1>
     <p class="w-tag">La messagerie de ta bande : messages, groupes et appels.</p>
-    <div class="w-tabs" role="tablist">
-      <button id="tab-login" role="tab" aria-selected="true">Se connecter</button>
-      <button id="tab-create" role="tab" aria-selected="false">Créer un compte</button>
-    </div>
+    <h2 id="w-sub" class="w-sub">Se connecter</h2>
     <label for="w-name">Nom</label>
     <input id="w-name" autocomplete="username" maxlength="24" autocapitalize="words">
     <label for="w-code">Code</label>
@@ -1290,21 +1288,21 @@ async function login(rawName, code){
   return {id: cred.user.uid, name: s0.data().name};
 }
 
-const SFX = ['', '-l', '-r'];   /* centre, copie de gauche, copie de droite */
+const SFX = ['', '-l', '-r'];   /* centre, gauche, droite */
+const PANEL_MODE = {'': 'login', '-l': 'create', '-r': 'admin'};   /* se connecter / créer un compte / administrateur */
 const g = (id, sfx) => $('#' + id + (sfx || ''));
-const wModes = {};
+const wModes = Object.assign({}, PANEL_MODE);
 function setMode(m, sfx){
   sfx = sfx || ''; wModes[sfx] = m;
-  g('tab-login', sfx).setAttribute('aria-selected', String(m === 'login'));
-  g('tab-create', sfx).setAttribute('aria-selected', String(m === 'create'));
+  g('w-sub', sfx).textContent = m === 'create' ? 'Créer un compte' : (m === 'admin' ? 'Administrateur' : 'Se connecter');
   g('w-code2-row', sfx).hidden = m !== 'create';
   g('w-inv-row', sfx).hidden = m !== 'create';
   g('w-code', sfx).autocomplete = m === 'create' ? 'new-password' : 'current-password';
-  g('w-submit', sfx).textContent = m === 'create' ? 'Créer mon compte' : 'Se connecter';
+  g('w-submit', sfx).textContent = m === 'create' ? 'Créer mon compte' : (m === 'admin' ? 'Entrer comme administrateur' : 'Se connecter');
   g('w-err', sfx).textContent = '';
   g('w-note', sfx).textContent = m === 'create'
     ? "Le code d'invitation t'est donné par la personne qui a créé l'appli. Ton code personnel fait 6 caractères au minimum ; n'utilise pas un mot de passe que tu utilises ailleurs."
-    : '';
+    : (m === 'admin' ? "Réservé à l'administrateur de l'appli." : '');
 }
 let ready = false, blockedMsg = 'Connexion à la messagerie en cours, patiente quelques secondes…';
 function welcomeBlock(msg){ blockedMsg = msg; SFX.forEach(x => { g('w-note', x).textContent = msg; }); }
@@ -1319,7 +1317,12 @@ async function submitWelcome(sfx){
   try {
     if (mode === 'create' && code !== g('w-code2', sfx).value) throw userError('Les deux codes ne sont pas identiques.');
     const acct = mode === 'create' ? await createAccount(name, code, g('w-inv', sfx).value) : await login(name, code);
+    if (mode === 'admin' && !(await isAdminUid(acct.id))) {
+      try { await FA.signOut(auth); } catch (x) {}
+      throw userError("Ce compte n'est pas administrateur.");
+    }
     await enterApp(acct);
+    if (mode === 'admin') openAdmin();
   } catch (e) {
     g('w-err', sfx).textContent = e && e.user ? e.message
       : (e && e.code === 'permission-denied' ? "Accès refusé : les règles de sécurité Firestore ne sont sans doute pas encore publiées (voir le guide)."
@@ -1334,8 +1337,7 @@ function makeCopy(center, sfx){
   c.classList.add('w-copy');
   c.querySelectorAll('[id]').forEach(n => { n.id += sfx; });
   c.querySelectorAll('label[for]').forEach(n => n.setAttribute('for', n.getAttribute('for') + sfx));
-  const h = c.querySelector('h1');
-  if (h) { const t = document.createElement('div'); t.className = 'w-title'; t.textContent = h.textContent; h.replaceWith(t); }
+  c.querySelectorAll('h1, .w-tag').forEach(n => n.remove());
   return c;
 }
 
@@ -1373,10 +1375,11 @@ function openNewsForm(){
 }
 
 /* ---------- administration ---------- */
-async function checkAdmin(){
-  try { const d = await db.doc('admins/' + me.id).get(); return d.exists; }
+async function isAdminUid(uid){
+  try { const d = await db.doc('admins/' + uid).get(); return d.exists; }
   catch (e) { return false; }
 }
+async function checkAdmin(){ return isAdminUid(me.id); }
 function watchSelfRemoval(){
   try {
     FS.onSnapshot(FS.doc(fsdb, 'accounts/' + me.id), snap => {
@@ -1457,6 +1460,7 @@ async function enterApp(acct){
     accSig = sg; people = m;
     m.forEach((_, uid) => { if (uid !== me.id) ensurePreview(dmId(me.id, uid)); });
     renderList(); renderHead(); if (cur) renderFeed();
+    if (!$('#admin').hidden) buildAdminList();
   }
   db.collection('accounts').onSnapshot(snap => applyAccounts(snap.docs),
     e => { $('#side-diag').textContent = 'Liste des comptes indisponible (' + (e && e.code) + ')'; });
@@ -1505,12 +1509,11 @@ document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('
   $('#lb-close').onclick = () => { $('#linkbox').hidden = true; };
   $('#lb-copy').onclick = () => { const i = $('#lb-url'); i.select(); try { navigator.clipboard.writeText(i.value).then(() => toast('Lien copié.'), () => toast('Sélectionne le lien et copie-le.')); } catch (e) { toast('Sélectionne le lien et copie-le.'); } };
   SFX.forEach(x => {
-    g('tab-login', x).onclick = () => setMode('login', x);
-    g('tab-create', x).onclick = () => setMode('create', x);
     g('w-submit', x).onclick = () => submitWelcome(x);
     ['w-name', 'w-code', 'w-code2', 'w-inv'].forEach(id => g(id, x).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitWelcome(x); } }));
   });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && cur) { markRead(cur.id); renderList(); } });
+  SFX.forEach(x => setMode(PANEL_MODE[x], x));
   welcomeBlock('Connexion à la messagerie…');
 
   if (!firebaseConfig || !firebaseConfig.apiKey || String(firebaseConfig.apiKey).indexOf('COLLE') === 0) {
@@ -1533,7 +1536,7 @@ document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('
       } catch (e) {}
       try { await FA.signOut(auth); } catch (e) {}
     }
-    ready = true; welcomeBlock(''); SFX.forEach(x => setMode('login', x)); $('#w-name').focus();
+    ready = true; welcomeBlock(''); SFX.forEach(x => setMode(PANEL_MODE[x], x)); $('#w-name').focus();
   });
 }
 boot();
