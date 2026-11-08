@@ -52,7 +52,7 @@ svg{display:block}
 .w-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px 26px;width:100%}
 .w-title{font:700 32px/1.1 var(--font-display);margin:0 0 6px;letter-spacing:-.01em}
 .w-sub{font:700 22px/1.2 var(--font-display);margin:0 0 14px}
-@media (max-width:959px){.w-layout{grid-template-columns:1fr;width:min(440px,100%);margin:0 auto}.w-news{order:-2}.w-card:not(.w-copy){order:-1}}
+@media (max-width:959px){.w-layout{grid-template-columns:1fr;width:min(440px,100%);margin:0 auto}.w-news{order:-3}.w-tuto{order:-2}.w-card:not(.w-copy){order:-1}}
 .w-card h1{font:700 32px/1.1 var(--font-display);margin:0 0 6px;letter-spacing:-.01em}
 .w-tag{margin:0 0 20px;color:var(--muted)}
 .w-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:14px;padding:4px;margin-bottom:18px}
@@ -210,6 +210,24 @@ label.lbl{display:block}
 .news-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .news-t{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:130px;overflow:auto;margin-top:4px}
 .news-d{font-size:12px;color:var(--muted);margin-top:4px}
+.w-tuto{grid-column:1/-1;display:flex;justify-content:center}
+.w-tuto .pill{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:16px}
+#tuto{z-index:75}
+.tuto-card{width:min(460px,94vw)}
+.tt-stage{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+.tt-title{display:inline-block;font:700 18px var(--font-display);margin-bottom:8px;padding:2px 8px;border-radius:8px}
+.tt-f{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;margin:6px 0;min-height:46px}
+.tt-l{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.tt-v{display:block;min-height:20px;font-weight:600;letter-spacing:.04em}
+.tt-btn{margin-top:10px;text-align:center;padding:11px;border-radius:12px;background:var(--mine);color:var(--on-mine);font-weight:600}
+.tt-btn.press{transform:scale(.96)}
+.tt-done{margin-top:10px;padding:10px;border-radius:12px;background:var(--surface-2);color:var(--ok);font-weight:700;text-align:center}
+.tt-hl{outline:3px solid var(--accent);outline-offset:2px}
+.tt-cap{min-height:3.4em;font-weight:600;margin:0 0 8px}
+.tt-bar{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-bottom:12px}
+.tt-bar i{display:block;height:100%;width:0;background:var(--mine);transition:width .3s}
+.tt-video{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:12px;background:#000;margin:12px 0}
+.w-news{order:0}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(440px,92vw);opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.show{opacity:1}
 
@@ -281,6 +299,7 @@ label.lbl{display:block}
 <section id="welcome" class="welcome">
  <div class="w-layout">
   <div id="w-news" class="w-news" hidden role="region" aria-label="Annonce"><div class="w-news-h">Annonce</div><div id="w-news-t"></div></div>
+  <div class="w-tuto"><button id="tuto-open" class="pill main" type="button"></button></div>
   <div class="w-card">
     <h1>Entre nous</h1>
     <p class="w-tag">La messagerie de ta bande : messages, groupes et appels.</p>
@@ -347,6 +366,32 @@ label.lbl{display:block}
     </div>
     <p id="gi-err" class="w-err" role="alert"></p>
     <div class="lb-actions"><button id="gi-leave" class="pill danger">Quitter le groupe</button><button id="gi-close" class="pill main">Fermer</button></div>
+  </div>
+</div>
+
+<div id="tuto" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="tt-t">
+  <div class="inc-card st-card tuto-card">
+    <h2 id="tt-t">Comment créer un compte</h2>
+    <div id="tt-video" hidden></div>
+    <div id="tt-stage" class="tt-stage" aria-hidden="true">
+      <div class="tt-title">Créer un compte</div>
+      <div class="tt-f" data-f="name"><span class="tt-l">Nom</span><span class="tt-v"></span></div>
+      <div class="tt-f" data-f="code"><span class="tt-l">Code</span><span class="tt-v"></span></div>
+      <div class="tt-f" data-f="code2"><span class="tt-l">Répète le code</span><span class="tt-v"></span></div>
+      <div class="tt-f" data-f="inv"><span class="tt-l">Code d'invitation</span><span class="tt-v"></span></div>
+      <div class="tt-btn" data-f="btn">Créer mon compte</div>
+      <div class="tt-done" data-f="done" hidden>✓ Compte créé : bienvenue !</div>
+    </div>
+    <p id="tt-cap" class="tt-cap" aria-live="polite"></p>
+    <div id="tt-bar" class="tt-bar" role="progressbar" aria-label="Avancement" aria-valuemin="1" aria-valuemax="7" aria-valuenow="1"><i id="tt-prog"></i></div>
+    <div class="lb-actions">
+      <span id="tt-ctl" style="display:contents">
+        <button id="tt-prev" class="pill" type="button">Précédent</button>
+        <button id="tt-play" class="pill" type="button">Pause</button>
+        <button id="tt-next" class="pill" type="button">Suivant</button>
+      </span>
+      <button id="tt-close" class="pill main" type="button">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -1341,6 +1386,73 @@ function makeCopy(center, sfx){
   return c;
 }
 
+/* ---------- démonstration « comment créer un compte » ---------- */
+/* Quand tu auras une vraie vidéo (lien YouTube ou fichier .mp4 en https), mets son adresse ici : elle remplacera la démonstration animée. */
+const TUTO_VIDEO_URL = '';
+const TT_STEPS = [
+  {cap: 'Sur l’écran de connexion, repère le panneau de gauche : « Créer un compte ».', focus: 'title'},
+  {cap: 'Écris ton nom dans la case « Nom ».', focus: 'name', type: 'Léa'},
+  {cap: 'Choisis un code personnel : 6 caractères au minimum.', focus: 'code', type: '••••••••'},
+  {cap: 'Écris exactement le même code dans « Répète le code ».', focus: 'code2', type: '••••••••'},
+  {cap: 'Tape le code d’invitation que t’a donné l’administrateur.', focus: 'inv', type: '••••••'},
+  {cap: 'Clique sur « Créer mon compte ».', focus: 'btn', press: true},
+  {cap: 'C’est fait ! Tu arrives dans la messagerie. Les fois suivantes, utilise le panneau du milieu : « Se connecter ».', focus: 'done', done: true}
+];
+const TT_FIELDS = ['name', 'code', 'code2', 'inv'];
+const tt = {i: 0, playing: false, timer: null, typer: null};
+const reducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+function ttRender(i, animate){
+  clearInterval(tt.typer);
+  const step = TT_STEPS[i];
+  TT_FIELDS.forEach(f => {
+    const idx = TT_STEPS.findIndex(x => x.focus === f), full = TT_STEPS[idx].type, node = $('#tt-stage [data-f="' + f + '"] .tt-v');
+    node.textContent = idx < i ? full : (idx === i && !animate ? full : '');
+  });
+  document.querySelectorAll('#tt-stage .tt-hl').forEach(n => n.classList.remove('tt-hl'));
+  const hl = step.focus === 'title' ? $('#tt-stage .tt-title') : $('#tt-stage [data-f="' + step.focus + '"]');
+  if (hl) hl.classList.add('tt-hl');
+  $('#tt-stage .tt-btn').classList.toggle('press', !!step.press);
+  $('#tt-stage .tt-done').hidden = !step.done;
+  $('#tt-cap').textContent = (i + 1) + '/' + TT_STEPS.length + ' — ' + step.cap;
+  $('#tt-prog').style.width = Math.round((i + 1) / TT_STEPS.length * 100) + '%';
+  $('#tt-bar').setAttribute('aria-valuenow', String(i + 1));
+  $('#tt-prev').disabled = i === 0; $('#tt-next').disabled = i === TT_STEPS.length - 1;
+  if (animate && step.type) {
+    const node = $('#tt-stage [data-f="' + step.focus + '"] .tt-v'); let n = 0;
+    tt.typer = setInterval(() => { n++; node.textContent = step.type.slice(0, n); if (n >= step.type.length) clearInterval(tt.typer); }, 110);
+  }
+}
+function ttSyncBtn(){ $('#tt-play').textContent = tt.playing ? 'Pause' : (tt.i >= TT_STEPS.length - 1 ? 'Revoir' : 'Lecture'); }
+function ttGo(i){
+  clearTimeout(tt.timer); tt.i = Math.max(0, Math.min(TT_STEPS.length - 1, i));
+  ttRender(tt.i, tt.playing);
+  if (tt.playing) {
+    if (tt.i < TT_STEPS.length - 1) tt.timer = setTimeout(() => { if (!$('#tuto').hidden) ttGo(tt.i + 1); }, 3800);
+    else tt.playing = false;
+  }
+  ttSyncBtn();
+}
+function tutoVideoEl(){
+  const u = String(TUTO_VIDEO_URL || '').trim();
+  if (!/^https:\/\//.test(u)) return null;
+  const y = u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+  if (y) { const f = document.createElement('iframe'); f.className = 'tt-video'; f.title = 'Vidéo : comment créer un compte'; f.src = 'https://www.youtube-nocookie.com/embed/' + y[1]; f.setAttribute('allowfullscreen', ''); return f; }
+  if (/\.(mp4|webm)(\?.*)?$/i.test(u)) { const v = document.createElement('video'); v.className = 'tt-video'; v.src = u; v.controls = true; v.playsInline = true; return v; }
+  return null;
+}
+function openTuto(){
+  const v = tutoVideoEl(), box = $('#tt-video'); box.textContent = '';
+  box.hidden = !v; ['#tt-stage', '#tt-cap', '#tt-bar', '#tt-ctl'].forEach(x => { $(x).hidden = !!v; });
+  if (v) box.append(v);
+  $('#tuto').hidden = false; $('#tt-close').focus();
+  if (!v) { tt.playing = !reducedMotion(); ttGo(0); }
+}
+function closeTuto(){
+  clearTimeout(tt.timer); clearInterval(tt.typer); tt.playing = false;
+  $('#tt-video').textContent = ''; $('#tuto').hidden = true;
+  const b = $('#tuto-open'); if (b) b.focus();
+}
+
 /* ---------- annonce (lisible par tous, modifiable par l'administrateur) ---------- */
 let announcement = {text: '', ts: 0};
 function renderNews(){
@@ -1496,6 +1608,14 @@ async function boot(){
   $('#gi-add-btn').onclick = addMembers;
   $('#gi-rename-btn').onclick = renameGroup;
 document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('grid'); });
+  $('#tuto-open').innerHTML = ic('play', 'fill', 16) + '<span>Voir comment créer un compte</span>';
+  $('#tuto-open').onclick = openTuto; $('#tt-close').onclick = closeTuto;
+  $('#tt-prev').onclick = () => { tt.playing = false; ttGo(tt.i - 1); };
+  $('#tt-next').onclick = () => { tt.playing = false; ttGo(tt.i + 1); };
+  $('#tt-play').onclick = () => {
+    if (tt.playing) { tt.playing = false; clearTimeout(tt.timer); ttRender(tt.i, false); ttSyncBtn(); }
+    else { tt.playing = true; ttGo(tt.i >= TT_STEPS.length - 1 ? 0 : tt.i); }
+  };
   $('#news-edit').onclick = openNewsForm;
   $('#admin-btn').innerHTML = ic('shield');
   $('#admin-btn').onclick = openAdmin;
@@ -1505,7 +1625,7 @@ document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('
   $('#st-close').onclick = closeSettings;
   $('#vol').oninput = e => { settings.vol = Number(e.target.value) / 100; saveSettings(); };
   $('#vol').onchange = () => { unlockAudio(); playCycle(settings.tone); };
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else ['#gnew', '#ginfo', '#linkbox', '#mk', '#lightbox'].forEach(x => { $(x).hidden = true; }); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else if (!$('#tuto').hidden) closeTuto(); else ['#gnew', '#ginfo', '#linkbox', '#mk', '#lightbox'].forEach(x => { $(x).hidden = true; }); } });
   $('#lb-close').onclick = () => { $('#linkbox').hidden = true; };
   $('#lb-copy').onclick = () => { const i = $('#lb-url'); i.select(); try { navigator.clipboard.writeText(i.value).then(() => toast('Lien copié.'), () => toast('Sélectionne le lien et copie-le.')); } catch (e) { toast('Sélectionne le lien et copie-le.'); } };
   SFX.forEach(x => {
