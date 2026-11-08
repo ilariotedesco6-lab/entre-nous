@@ -1389,12 +1389,14 @@ function makeCopy(center, sfx){
 /* ---------- démonstration « comment créer un compte » ---------- */
 /* Quand tu auras une vraie vidéo (lien YouTube ou fichier .mp4 en https), mets son adresse ici : elle remplacera la démonstration animée. */
 const TUTO_VIDEO_URL = '';
+/* Le code d'invitation montré dans la démonstration. S'il change dans Firebase (config, invite), change-le aussi ici. */
+const TUTO_INVITE_CODE = 'ilario';
 const TT_STEPS = [
   {cap: 'Sur l’écran de connexion, repère le panneau de gauche : « Créer un compte ».', focus: 'title'},
   {cap: 'Écris ton nom dans la case « Nom ».', focus: 'name', type: 'Léa'},
   {cap: 'Choisis un code personnel : 6 caractères au minimum.', focus: 'code', type: '••••••••'},
   {cap: 'Écris exactement le même code dans « Répète le code ».', focus: 'code2', type: '••••••••'},
-  {cap: 'Tape le code d’invitation que t’a donné l’administrateur.', focus: 'inv', type: '••••••'},
+  {cap: 'Tape le code d’invitation que t’a donné l’administrateur.', focus: 'inv', type: TUTO_INVITE_CODE},
   {cap: 'Clique sur « Créer mon compte ».', focus: 'btn', press: true},
   {cap: 'C’est fait ! Tu arrives dans la messagerie. Les fois suivantes, utilise le panneau du milieu : « Se connecter ».', focus: 'done', done: true}
 ];
