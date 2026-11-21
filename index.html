@@ -273,6 +273,7 @@ label.lbl{display:block}
     </div>
     <ul id="chats"></ul>
     <p id="side-hint" class="hint" hidden></p>
+    <p class="hint" style="font-size:11px;opacity:.7">Version 4 : numéros de téléphone</p>
   </aside>
 
   <main id="main">
@@ -1808,7 +1809,7 @@ async function boot(){
       try {
         const s0 = await db.doc('accounts/' + user.uid).get();
         if (s0.exists && !entered) { await enterApp({id: user.uid, name: s0.data().name}); return; }
-      } catch (e) {}
+      } catch (e) { console.error(e); try { toast('Erreur au démarrage : ' + (e && (e.code || e.message))); } catch (x) {} }
       try { await FA.signOut(auth); } catch (e) {}
     }
     ready = true; welcomeBlock(''); SFX.forEach(x => setMode(PANEL_MODE[x], x)); $('#w-name').focus();
