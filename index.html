@@ -108,7 +108,6 @@ svg{display:block}
 .theirs .bubble{border-bottom-left-radius:6px}
 .time{display:block;font-size:11px;opacity:.65;text-align:right;margin-top:2px;white-space:normal}
 
-.mine .voice.playing 
 #composer{padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}
 .compose{display:flex;align-items:flex-end;gap:8px}
 #ta{flex:1;resize:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:20px;padding:10px 14px;font:inherit;max-height:140px;line-height:1.35}
@@ -231,6 +230,12 @@ label.lbl{display:block}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:80;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:min(440px,92vw);opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.show{opacity:1}
 
+/* réponses et suppression de messages */
+.acts{display:flex;gap:6px;margin:4px 0 2px}
+.quote{border-left:3px solid var(--accent);padding:2px 8px;margin-bottom:5px;font-size:13px;opacity:.85;white-space:normal;overflow-wrap:anywhere}
+#reply-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;margin:-10px -12px 8px;background:var(--surface-2);font-size:13px}
+#reply-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 @media (max-width:759px){
   #app{grid-template-columns:1fr}
   #main{display:none}
@@ -287,6 +292,7 @@ label.lbl{display:block}
       <input id="f-photo" type="file" accept="image/*" hidden>
       <input id="f-cam" type="file" accept="image/*" capture="environment" hidden>
       <input id="f-doc" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" hidden>
+      <div id="reply-bar" hidden><span id="reply-t"></span><button id="reply-x" class="pill small" type="button">Annuler</button></div>
       <div id="compose-text" class="compose">
         <button id="btn-plus" class="round-btn ghost" type="button" aria-label="Joindre" aria-haspopup="menu" aria-expanded="false"></button>
         <textarea id="ta" rows="1" maxlength="2000" placeholder="Écrire un message" aria-label="Message"></textarea>
@@ -621,6 +627,7 @@ function renderHead(){
   $('#call-video-btn').title = title || 'Appel vidéo (ouvre Jitsi Meet)';
 }
 function closeChat(){
+  setReply(null);
   if (unsubCur) { unsubCur(); unsubCur = null; }
   cur = null; msgs = []; clearVotes();
   $('#chat-head').hidden = true; $('#feed').hidden = true; $('#composer').hidden = true; $('#empty').hidden = false;
@@ -629,6 +636,7 @@ function closeChat(){
 
 async function openChat(chat){
   if (!db) return;
+  setReply(null);
   cur = chat; msgs = []; stick = true; clearVotes(); closePlus();
   if (unsubCur) { unsubCur(); unsubCur = null; }
   document.body.classList.add('in-chat');
@@ -660,13 +668,42 @@ function renderFeed(){
     const row = el('div', 'row ' + (mine ? 'mine' : 'theirs'));
     if (cur.group && !mine && lastFrom !== m.from) row.append(el('div', 'who', nameOf(m.from)));
     const bub = el('div', 'bubble');
+    if (m.reply && typeof m.reply.text === 'string') {
+      const q = el('div', 'quote'); q.append(el('strong', '', nameOf(m.reply.from)), document.createElement('br'), document.createTextNode(m.reply.text));
+      bub.append(q);
+    }
     bub.append(bodyEl(m));
     bub.append(el('span', 'time', fmtTime(m.ts)));
-    row.append(bub); feed.append(row);
+    row.append(bub);
+    const acts = el('div', 'acts'); acts.hidden = true;
+    const rb = el('button', 'pill small', 'Répondre'); rb.type = 'button'; rb.onclick = () => { acts.hidden = true; setReply(m); };
+    acts.append(rb);
+    if (mine && canWrite) { const db2 = el('button', 'pill danger small', 'Supprimer'); db2.type = 'button'; db2.onclick = () => deleteMsg(m, db2); acts.append(db2); }
+    bub.onclick = e => { if (e.target.closest('a,button,img,input')) return; acts.hidden = !acts.hidden; };
+    row.append(acts); feed.append(row);
     lastFrom = m.from;
   });
   if (stick || near || lastMine) { feed.scrollTop = feed.scrollHeight; stick = false; }
   else feed.scrollTop = prevTop;
+}
+
+/* ---------- réponses et suppression ---------- */
+let replyTo = null;
+function setReply(m){
+  replyTo = m ? {id: m.id, from: m.from, text: previewText(m, false).replace(/^Toi : /, '').slice(0, 80)} : null;
+  $('#reply-bar').hidden = !m;
+  if (m) { $('#reply-t').textContent = 'Réponse à ' + nameOf(m.from) + ' : ' + replyTo.text; $('#ta').focus(); }
+}
+let delArmed = null;
+async function deleteMsg(m, btn){
+  if (delArmed !== m.id) {
+    delArmed = m.id; btn.textContent = 'Confirmer ?';
+    setTimeout(() => { if (delArmed === m.id) { delArmed = null; btn.textContent = 'Supprimer'; } }, 4000);
+    return;
+  }
+  delArmed = null;
+  try { await db.doc(msgPath(cur.id) + '/' + m.id).delete(); }
+  catch (e) { toast('Suppression impossible' + (e && e.code === 'permission-denied' ? ' : mets à jour les règles Firebase.' : '.')); }
 }
 
 /* ---------- envoi de texte ---------- */
@@ -676,9 +713,11 @@ async function sendText(){
   const ta = $('#ta'); const t = ta.value.trim();
   if (!t || !cur || !canWrite) return;
   ta.value = ''; autosize(); toggleSendBtn();
-  const chat = cur;
+  const chat = cur, rep = replyTo; setReply(null);
   try {
-    await db.collection(msgPath(chat.id)).add({from: me.id, ts: Date.now(), kind: 'text', text: t.slice(0, 2000)});
+    const data = {from: me.id, ts: Date.now(), kind: 'text', text: t.slice(0, 2000)};
+    if (rep) data.reply = rep;
+    await db.collection(msgPath(chat.id)).add(data);
     stick = true; maybePrune(chat.id);
   } catch (e) { ta.value = t; autosize(); toggleSendBtn(); toast("Le message n'a pas pu être envoyé (" + (e.code || 'erreur') + ')'); }
 }
@@ -1596,6 +1635,7 @@ async function boot(){
   $('#ta').addEventListener('input', () => { autosize(); toggleSendBtn(); });
   $('#ta').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendText(); } });
   $('#btn-send').onclick = sendText;
+  $('#reply-x').onclick = () => setReply(null);
   initPlus();
   $('#call-audio-btn').onclick = () => startCall(false);
   $('#call-video-btn').onclick = () => startCall(true);
@@ -1609,7 +1649,7 @@ async function boot(){
   $('#gi-leave').onclick = leaveGroup;
   $('#gi-add-btn').onclick = addMembers;
   $('#gi-rename-btn').onclick = renameGroup;
-document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('grid'); });
+  document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('grid'); });
   $('#tuto-open').innerHTML = ic('play', 'fill', 16) + '<span>Voir comment créer un compte</span>';
   $('#tuto-open').onclick = openTuto; $('#tt-close').onclick = closeTuto;
   $('#tt-prev').onclick = () => { tt.playing = false; ttGo(tt.i - 1); };
@@ -1667,3 +1707,4 @@ boot();
 <script>setTimeout(function(){ if (!window.__enBooted) { var n = document.getElementById('w-note'); if (n) n.textContent = 'Le chargement a échoué. Vérifie ta connexion Internet, puis recharge la page.'; } }, 10000);</script>
 </body>
 </html>
+  
