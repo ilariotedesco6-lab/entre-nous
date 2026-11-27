@@ -236,9 +236,6 @@ label.lbl{display:block}
 #reply-bar{display:flex;align-items:center;gap:8px;padding:6px 14px;margin:-10px -12px 8px;background:var(--surface-2);font-size:13px}
 #reply-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-#phone{z-index:65}
-.ph-in{font-size:20px!important;letter-spacing:.06em;text-align:center}
-#my-phone{padding:0 18px 10px;margin:0}
 @media (max-width:759px){
   #app{grid-template-columns:1fr}
   #main{display:none}
@@ -265,7 +262,6 @@ label.lbl{display:block}
       <a class="applink" href="https://claude.ai/public/artifacts/73d757a8-c90f-495e-bdc4-da0902c59bc0" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Répertoire</span></a>
       <a class="applink" href="https://ilariotedesco6-lab.github.io/ilaplant/" target="_blank" rel="noopener noreferrer"><span class="ic-wrap"></span><span>Ilaplant</span></a>
     </div>
-    <p id="my-phone" class="hint" hidden></p>
     <div id="news" class="news" hidden role="region" aria-label="Annonce">
       <div class="news-h"><span>Annonce</span><button id="news-edit" class="pill small" type="button" hidden>Modifier</button></div>
       <div id="news-t" class="news-t"></div>
@@ -273,7 +269,7 @@ label.lbl{display:block}
     </div>
     <ul id="chats"></ul>
     <p id="side-hint" class="hint" hidden></p>
-    <p class="hint" style="font-size:11px;opacity:.7">Version 4 : numéros de téléphone</p>
+    <p id="side-diag" class="hint" style="font-size:12px;opacity:.8"></p>
   </aside>
 
   <main id="main">
@@ -343,26 +339,6 @@ label.lbl{display:block}
       <button id="inc-no" class="big-btn no" aria-label="Refuser"></button>
       <button id="inc-yes" class="big-btn ok" aria-label="Répondre"></button>
     </div>
-  </div>
-</div>
-
-<div id="phone" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ph-t">
-  <div class="inc-card st-card">
-    <h2 id="ph-t">Choisis ton numéro de téléphone</h2>
-    <p>Ce numéro n'est pas réel : invente-le. Tes amis s'en servent pour te rajouter, et personne ne peut te voir sans l'avoir. Chiffres uniquement, de 4 à 12.</p>
-    <input id="ph-num" class="lb-url ph-in" inputmode="numeric" maxlength="16" placeholder="Ton numéro" autocomplete="off" aria-label="Ton numéro de téléphone">
-    <p id="ph-err" class="w-err" role="alert"></p>
-    <div class="lb-actions"><button id="ph-rand" class="pill" type="button">Au hasard</button><button id="ph-ok" class="pill main" type="button">Valider</button></div>
-  </div>
-</div>
-
-<div id="addc" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ac-t">
-  <div class="inc-card st-card">
-    <h2 id="ac-t">Rajouter quelqu'un</h2>
-    <p>Entre le numéro de téléphone de ton ami·e pour le ou la voir et lui écrire.</p>
-    <input id="ac-num" class="lb-url ph-in" inputmode="numeric" maxlength="16" placeholder="Son numéro" autocomplete="off" aria-label="Numéro de ton ami·e">
-    <p id="ac-err" class="w-err" role="alert"></p>
-    <div class="lb-actions"><button id="ac-cancel" class="pill" type="button">Annuler</button><button id="ac-ok" class="pill main" type="button">Rajouter</button></div>
   </div>
 </div>
 
@@ -528,7 +504,7 @@ function notice(msg){ const n = $('#notice'); n.textContent = msg; n.hidden = !m
 /* ---------- état ---------- */
 let db = null, room = null, auth = null, fsdb = null;
 let isAdmin = false, kickedOff = false;
-const me = {id: null, name: '', phone: ''};
+const me = {id: null, name: ''};
 let canWrite = true;
 const prof = {};                 // id -> profil résolu
 let people = new Map();          // id -> {seen}
@@ -542,19 +518,7 @@ let readMap = {};
 try { readMap = JSON.parse(localStorage.getItem('entre-nous:read') || '{}'); } catch (e) {}
 function markRead(chatId){ readMap[chatId] = Date.now(); try { localStorage.setItem('entre-nous:read', JSON.stringify(readMap)); } catch (e) {} }
 
-function setProf(id, name){ prof[id] = {id, name, avatarUrl: initialsAvatar(name, id)}; }
-const resolving = new Set();
-/* Les noms des personnes qui ne sont pas dans les contacts (salon, groupes) sont lus un par un dans leur compte. */
-async function resolve(ids){
-  const miss = [...new Set(ids || [])].filter(id => id && !prof[id] && !resolving.has(id));
-  if (!miss.length || !db) return;
-  miss.forEach(id => resolving.add(id));
-  await Promise.all(miss.map(async id => {
-    try { const s0 = await db.doc('accounts/' + id).get(); const x = s0.exists ? s0.data() : null; if (x && typeof x.name === 'string') setProf(id, x.name); }
-    catch (e) {}
-  }));
-  renderList(); renderHead();
-}
+async function resolve(){ /* les noms viennent des comptes */ }
 function nameOf(id){ const p = prof[id]; return (p && p.name) || ('Ami·e ' + String(id || '').slice(-3)); }
 function avatarOf(id){ return (prof[id] && prof[id].avatarUrl) || ''; }
 function dmId(a, b){ return 'dm~' + [a, b].sort().join('~'); }
@@ -570,7 +534,6 @@ function ensurePreview(chatId){
   if (!db || previewUnsubs.has(chatId)) return;
   const un = db.collection(msgPath(chatId)).orderBy('ts', 'desc').limit(1).onSnapshot(snap => {
     previews.set(chatId, snap.docs[0] ? snap.docs[0].data() : null);
-    if (snap.docs[0]) resolve([snap.docs[0].data().from]);
     if (cur && cur.id === chatId && !document.hidden) markRead(chatId);
     renderList();
   }, () => {});
@@ -626,10 +589,6 @@ function renderList(){
   nb.innerHTML = ic('plus', '', 18) + '<span>Nouveau groupe</span>';
   nb.disabled = !canWrite || others.length === 0; nb.onclick = openNewGroup;
   nl.append(nb); ul.append(nl);
-  const al = el('li'); const ab = el('button', 'newg');
-  ab.innerHTML = ic('contact', '', 18) + '<span>Rajouter quelqu\u2019un</span>';
-  ab.disabled = !canWrite; ab.onclick = openAddContact;
-  al.append(ab); ul.append(al);
   const gs = myGroups().sort((a, b) => ((previews.get('g~' + b[0]) || {}).ts || b[1].created || 0) - ((previews.get('g~' + a[0]) || {}).ts || a[1].created || 0));
   if (gs.length) ul.append(el('li', 'sec-l', 'Groupes'));
   gs.forEach(e => { const w = el('div', 'av-wrap'); w.append(groupAv(e[1].name, e[0])); ul.append(item({id: 'g~' + e[0], group: true, gid: e[0]}, w, e[1].name)); });
@@ -642,7 +601,7 @@ function renderList(){
   const hint = $('#side-hint');
   if (others.length === 0) {
     hint.hidden = false;
-    hint.textContent = "Tu n'as encore personne dans tes contacts. Appuie sur « Rajouter quelqu'un » et entre son numéro de téléphone.";
+    hint.textContent = "Personne d'autre n'a encore ouvert la page. Dès qu'un·e ami·e l'ouvre, il ou elle apparaît ici.";
   } else hint.hidden = true;
 }
 
@@ -1172,71 +1131,6 @@ function initPlus(){
   $('#lightbox').onclick = () => { $('#lightbox').hidden = true; };
 }
 
-/* ---------- numéros de téléphone (faux) et contacts ---------- */
-function normPhone(v){ return String(v || '').replace(/\D/g, '').slice(0, 12); }
-function fmtPhone(n){ return String(n || '').replace(/(\d{2})(?=\d)/g, '$1 '); }
-function renderMyPhone(){
-  const p = $('#my-phone');
-  p.hidden = !me.phone;
-  p.textContent = me.phone ? 'Ton numéro : ' + fmtPhone(me.phone) + ' (donne-le à tes amis pour qu\u2019ils te rajoutent)' : '';
-}
-function askPhone(){
-  return new Promise(res => {
-    const ov = $('#phone'), inp = $('#ph-num'), err = $('#ph-err'), ok = $('#ph-ok');
-    inp.value = ''; err.textContent = ''; ov.hidden = false; inp.focus();
-    $('#ph-rand').onclick = () => { inp.value = String(Math.floor(Math.random() * 9e9) + 1e9); err.textContent = ''; };
-    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); ok.click(); } };
-    ok.onclick = async () => {
-      const n = normPhone(inp.value);
-      if (n.length < 4) { err.textContent = 'Entre entre 4 et 12 chiffres.'; return; }
-      ok.disabled = true; err.textContent = '';
-      try {
-        let mineAlready = false;
-        try { const s1 = await db.doc('phones/' + n).get(); mineAlready = s1.exists && (s1.data() || {}).uid === me.id; } catch (e) {}
-        if (!mineAlready) await db.doc('phones/' + n).set({uid: me.id, name: me.name, ts: Date.now()});
-        try { await db.doc('users/' + me.id).set({phone: n}); }
-        catch (e) { if (!mineAlready) await db.doc('phones/' + n).delete().catch(() => {}); throw e; }
-        ov.hidden = true; res(n);
-      } catch (e) {
-        err.textContent = e && e.code === 'permission-denied' ? "Ce numéro est déjà pris (ou les règles Firebase ne sont pas à jour). Essaie-en un autre." : 'Une erreur est survenue. Réessaie.';
-      }
-      ok.disabled = false;
-    };
-  });
-}
-async function ensurePhone(){
-  let n = '';
-  try { const s0 = await db.doc('users/' + me.id).get(); if (s0.exists) n = normPhone((s0.data() || {}).phone); } catch (e) {}
-  if (!n) n = await askPhone();
-  me.phone = n; renderMyPhone();
-}
-function openAddContact(){
-  if (!canWrite) return;
-  $('#ac-num').value = ''; $('#ac-err').textContent = ''; $('#addc').hidden = false; $('#ac-num').focus();
-}
-async function addContact(){
-  const err = $('#ac-err'), btn = $('#ac-ok'); err.textContent = '';
-  const n = normPhone($('#ac-num').value);
-  if (n.length < 4) { err.textContent = 'Entre un numéro de 4 à 12 chiffres.'; return; }
-  if (n === me.phone) { err.textContent = "C'est ton propre numéro."; return; }
-  btn.disabled = true;
-  try {
-    const s0 = await db.doc('phones/' + n).get();
-    const x = s0.exists ? s0.data() : null;
-    if (!x || !x.uid || typeof x.name !== 'string') err.textContent = 'Aucun compte avec ce numéro.';
-    else if (x.uid === me.id) err.textContent = "C'est ton propre numéro.";
-    else if (people.has(x.uid)) err.textContent = 'Cette personne est déjà dans tes contacts.';
-    else {
-      await db.doc('users/' + me.id + '/contacts/' + x.uid).set({name: x.name, phone: n, ts: Date.now()});
-      db.doc('users/' + x.uid + '/contacts/' + me.id).set({name: me.name, phone: me.phone, ts: Date.now()}).catch(() => {});
-      setProf(x.uid, x.name);
-      $('#addc').hidden = true; toast(x.name + ' a été ajouté·e.');
-      openChat({id: dmId(me.id, x.uid), group: false, uid: x.uid});
-    }
-  } catch (e) { err.textContent = e && e.code === 'permission-denied' ? 'Accès refusé : mets à jour les règles Firebase.' : 'Une erreur est survenue. Réessaie.'; }
-  btn.disabled = false;
-}
-
 /* ---------- groupes ---------- */
 function postSys(chatId, text){
   return db.collection(msgPath(chatId)).add({from: me.id, ts: Date.now(), kind: 'sys', text}).catch(() => {});
@@ -1349,7 +1243,6 @@ function applyGroups(docs){
   const sg = [...m.entries()].map(e => e[0] + ':' + e[1].name + ':' + e[1].members.join(',')).sort().join('|');
   if (sg === grpSig) return;
   grpSig = sg; groups = m;
-  { const ids = []; m.forEach(x => { (x.members || []).forEach(i => ids.push(i)); if (x.creator) ids.push(x.creator); }); resolve(ids); }
   myGroups().forEach(e => ensurePreview('g~' + e[0]));
   if (cur && cur.gid) {
     const g = groups.get(cur.gid);
@@ -1653,20 +1546,15 @@ function watchSelfRemoval(){
     });
   } catch (e) {}
 }
-async function buildAdminList(){
+function buildAdminList(){
   const list = $('#adm-list'); list.textContent = ''; $('#adm-err').textContent = '';
-  let docs = [];
-  try { docs = (await db.collection('accounts').get()).docs; }
-  catch (e) { $('#adm-err').textContent = 'Liste des comptes indisponible' + (e && e.code ? ' (' + e.code + ')' : '') + '.'; return; }
-  const others = docs.filter(d => d.id !== me.id && d.data() && typeof d.data().name === 'string');
+  const others = otherAccounts();
   if (!others.length) { list.append(el('p', 'hint', 'Aucun autre compte pour le moment.')); return; }
-  others.forEach(d => {
-    const uid = d.id, name = d.data().name;
+  others.forEach(uid => {
     const row = el('div', 'adm-row');
-    row.append(avatarEl(uid, 'sm'), el('span', 'lab', name));
-    if (!prof[uid]) setProf(uid, name);
+    row.append(avatarEl(uid, 'sm'), el('span', 'lab', nameOf(uid)));
     const b = el('button', 'pill danger small', 'Retirer'); b.type = 'button';
-    b.setAttribute('aria-label', 'Retirer ' + name);
+    b.setAttribute('aria-label', 'Retirer ' + nameOf(uid));
     b.onclick = () => removeAccount(uid, b);
     row.append(b); list.append(row);
   });
@@ -1691,7 +1579,6 @@ async function enterApp(acct){
   prof[me.id] = {id: me.id, name: me.name, avatarUrl: initialsAvatar(me.name, me.id)};
   $('#welcome').hidden = true;
   const box = $('#me-id'); box.textContent = ''; box.append(avatarEl(me.id, 'sm'), el('span', '', me.name));
-  await ensurePhone();
 
   room = makeRoom(me.id);
   room.presence({uid: me.id});
@@ -1711,22 +1598,25 @@ async function enterApp(acct){
   renderNews();
 
   ensurePreview('salon');
-  let conSig = '';
-  function applyContacts(docs){
+  let accSig = '';
+  function applyAccounts(docs){
     const m = new Map();
     docs.forEach(d => {
       const x = d.data();
       if (!x || typeof x.name !== 'string') return;
-      m.set(d.id, x); setProf(d.id, x.name);
+      m.set(d.id, x);
+      prof[d.id] = {id: d.id, name: x.name, avatarUrl: initialsAvatar(x.name, d.id)};
     });
+    $('#side-diag').textContent = 'Comptes visibles : ' + m.size;
     const sg = [...m.entries()].map(e => e[0] + ':' + e[1].name).sort().join('|');
-    if (sg === conSig) return;
-    conSig = sg; people = m;
-    m.forEach((_, uid) => ensurePreview(dmId(me.id, uid)));
+    if (sg === accSig) return;
+    accSig = sg; people = m;
+    m.forEach((_, uid) => { if (uid !== me.id) ensurePreview(dmId(me.id, uid)); });
     renderList(); renderHead(); if (cur) renderFeed();
+    if (!$('#admin').hidden) buildAdminList();
   }
-  db.collection('users/' + me.id + '/contacts').onSnapshot(snap => applyContacts(snap.docs),
-    e => toast('Liste des contacts indisponible (' + (e && e.code) + '). Mets à jour les règles Firebase.'));
+  db.collection('accounts').onSnapshot(snap => applyAccounts(snap.docs),
+    e => { $('#side-diag').textContent = 'Liste des comptes indisponible (' + (e && e.code) + ')'; });
   db.collection('groups').onSnapshot(snap => applyGroups(snap.docs), () => {});
   renderList();
   if (window.matchMedia('(min-width: 760px)').matches) openChat({id: 'salon', group: true});
@@ -1759,10 +1649,6 @@ async function boot(){
   $('#gi-leave').onclick = leaveGroup;
   $('#gi-add-btn').onclick = addMembers;
   $('#gi-rename-btn').onclick = renameGroup;
-  $('#ac-cancel').onclick = () => { $('#addc').hidden = true; };
-  $('#ac-ok').onclick = addContact;
-  $('#ac-num').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addContact(); } });
-  ['#ph-num', '#ac-num'].forEach(sel => $(sel).addEventListener('input', e => { e.target.value = normPhone(e.target.value); }));
   document.querySelectorAll('.applink .ic-wrap').forEach(w => { w.innerHTML = ic('grid'); });
   $('#tuto-open').innerHTML = ic('play', 'fill', 16) + '<span>Voir comment créer un compte</span>';
   $('#tuto-open').onclick = openTuto; $('#tt-close').onclick = closeTuto;
@@ -1781,7 +1667,7 @@ async function boot(){
   $('#st-close').onclick = closeSettings;
   $('#vol').oninput = e => { settings.vol = Number(e.target.value) / 100; saveSettings(); };
   $('#vol').onchange = () => { unlockAudio(); playCycle(settings.tone); };
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else if (!$('#tuto').hidden) closeTuto(); else ['#gnew', '#ginfo', '#linkbox', '#mk', '#lightbox', '#addc'].forEach(x => { $(x).hidden = true; }); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#settings').hidden) closeSettings(); else if (!$('#admin').hidden) closeAdmin(); else if (!$('#tuto').hidden) closeTuto(); else ['#gnew', '#ginfo', '#linkbox', '#mk', '#lightbox'].forEach(x => { $(x).hidden = true; }); } });
   $('#lb-close').onclick = () => { $('#linkbox').hidden = true; };
   $('#lb-copy').onclick = () => { const i = $('#lb-url'); i.select(); try { navigator.clipboard.writeText(i.value).then(() => toast('Lien copié.'), () => toast('Sélectionne le lien et copie-le.')); } catch (e) { toast('Sélectionne le lien et copie-le.'); } };
   SFX.forEach(x => {
@@ -1809,7 +1695,7 @@ async function boot(){
       try {
         const s0 = await db.doc('accounts/' + user.uid).get();
         if (s0.exists && !entered) { await enterApp({id: user.uid, name: s0.data().name}); return; }
-      } catch (e) { console.error(e); try { toast('Erreur au démarrage : ' + (e && (e.code || e.message))); } catch (x) {} }
+      } catch (e) {}
       try { await FA.signOut(auth); } catch (e) {}
     }
     ready = true; welcomeBlock(''); SFX.forEach(x => setMode(PANEL_MODE[x], x)); $('#w-name').focus();
